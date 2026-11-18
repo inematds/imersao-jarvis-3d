@@ -52,7 +52,6 @@ dialog::backdrop{background:var(--shade)}
 dialog h2{font-size:clamp(26px,4vw,36px)}
 dialog h3{margin-top:1.25em}
 dialog p{margin:.5em 0 1em}
-dialog iframe{border:0;width:100%;aspect-ratio:16/9}
 #aviso{border-left:3px solid var(--amb);padding-left:12px}
 @media(max-width:720px){.hero{grid-template-columns:1fr}.foto{min-height:235px;background-size:auto 170%;background-position:right 12%}.convite{padding:24px}.barra{gap:8px}.barra img{width:112px}.barra>span:first-of-type{padding-left:8px}.barra:has(#cracha:not([hidden]))>span:first-of-type{display:none}}
 details{margin:18px 0;border-block:1px solid var(--line);padding:12px 0}
@@ -119,9 +118,9 @@ body:has(dialog[open]) #proximo{display:none}
  dialog .cab{margin-bottom:8px}
 }
 
-#videoTelao{--preto:#000;position:fixed;z-index:1;display:grid;place-items:center;background:var(--preto);container-type:size}
-#videoTelao iframe{grid-area:1/1;width:100%;height:100%;border:0}
-#videoTelao iframe.vertical{width:auto;max-width:100%;aspect-ratio:9/16}
+#videoTelao{--preto:#000;position:fixed;z-index:1;display:grid;place-items:center;overflow:hidden;background:var(--preto);container-type:size}
+#videoTelao iframe{grid-area:1/1;width:min(100cqw,calc(100cqh * 16 / 9));height:min(100cqh,calc(100cqw * 9 / 16));border:0}
+#videoTelao iframe.vertical{width:calc(100cqh * 9 / 16);height:100cqh}
 #capaTelao{display:grid;justify-items:center;align-content:center;text-align:center;padding:2cqh 3cqw;gap:2cqh;width:100%;height:100%;background:var(--card);line-height:1.15}
 #tituloTelao{font:700 clamp(16px,8cqh,48px)/1.08 var(--title)}
 #materialTelao{font-size:clamp(14px,4cqh,20px)}
