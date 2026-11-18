@@ -23,6 +23,8 @@ def plano(texto):
 
 FONTE_TXT = plano(re.sub(r"(?is)<(script|style|svg)[^>]*>.*?</\1>", " ", FONTE))
 URLS = set(re.findall(r'href="(https?://[^"]+)"', FONTE))
+# Links internos da fonte valem, mas no endereço completo: o evento fica em outro site.
+URLS |= {"https://eventos.inema.pro" + u for u in re.findall(r'href="(/[^"#]*)"', FONTE)}
 
 
 def erro(msg):
