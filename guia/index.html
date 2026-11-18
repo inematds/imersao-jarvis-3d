@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Imersão Jarvis 3D: entre no hangar e monte um assistente que lembra de você</title>
+<meta name="description" content="Evento 3D grátis no navegador. Você anda por 6 palcos, assiste às aulas no telão, faz as tarefas e monta um assistente que lembra de você e só faz o perigoso com o seu OK.">
+<link rel="alternate" hreflang="pt-BR" href="https://inematds.github.io/imersao-jarvis-3d/guia/">
+<link rel="alternate" hreflang="en" href="https://inematds.github.io/imersao-jarvis-3d/guia/en/">
+<link rel="alternate" hreflang="es" href="https://inematds.github.io/imersao-jarvis-3d/guia/es/">
+<meta property="og:title" content="Imersão Jarvis 3D: monte um assistente que lembra de você">
+<meta property="og:description" content="Entre no hangar 3D, passe pelos 6 palcos e monte um assistente que só faz o perigoso com o seu OK. Grátis, no navegador.">
+<meta property="og:image" content="https://inematds.github.io/imersao-jarvis-3d/guia/assets/banner.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#FACC15; --amb2:#f0c070; --sky:#38bdf8; --pro:#cbd5e1;
+    --fill:#FACC15; --tint:rgba(250,204,21,.12); --ok:#7CE0C6; --bad:#F0918A;
+    color-scheme:dark;
+  }
+  body.light{
+    --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+    --txt:#1a1a22; --mut:#5b5b68; --amb:#a16207; --amb2:#a16207; --sky:#0369a1; --pro:#b45309;
+    --fill:#FACC15; --tint:#FEF9C3; --ok:#0E6B55; --bad:#A83426;
+    color-scheme:light;
+  }
+  body.light .hero .glow{opacity:.5}
+  body.light pre{background:#0e0e14;color:#d6d6e0}
+  body.light pre .c{color:#8a8a98}
+  body.light pre .k{color:#f0c070}
+  body.light nav{background:rgba(246,247,249,.85)}
+  body.light .amb{color:var(--txt);background:linear-gradient(transparent 55%,#FACC15 55%)}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  a{color:var(--amb);text-decoration:none}
+  body.light main a:not(.btn),body.light footer a{color:#854d0e;text-decoration:underline;text-decoration-color:#FACC15;text-decoration-thickness:3px}
+  code,pre{font-family:"JetBrains Mono",monospace}
+  p code,li code,td code{font-size:.9em;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:.05em .35em}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+  .mut{color:var(--mut)} .amb{color:var(--amb)}
+  .chip{display:inline-block;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600;font-family:Sora}
+  nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(12px);background:rgba(12,12,16,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  nav .brand{display:flex;align-items:center;gap:8px;font-family:Sora;font-weight:800;letter-spacing:-.02em;color:var(--amb);white-space:nowrap}
+  nav .brand .emoji{font-size:1.25rem}
+  nav .sep{color:var(--mut);opacity:.45}
+  nav .inema{color:var(--sky);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .inema:hover{filter:brightness(1.15)}
+  nav .pro{color:var(--pro);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .pro:hover{filter:brightness(1.15)}
+  nav .clubpro{display:inline-flex;align-items:center;gap:6px}
+  nav .links{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:.92rem}
+  nav .links a.sec{color:var(--mut)} nav .links a.sec:hover{color:var(--txt)}
+  .lang{display:inline-flex;gap:2px;font-family:Sora;font-size:.78rem}
+  .lang a{color:var(--mut);padding:.2em .45em;border-radius:6px} .lang a.on{color:var(--amb);background:var(--tint)}
+  .tgl{background:var(--bg2);border:1px solid var(--line);color:var(--txt);width:38px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+  .tgl:hover{border-color:var(--amb)}
+  .btn{display:inline-block;background:var(--fill);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  nav .links a.sec{white-space:nowrap}
+  @media(max-width:1360px){nav .links a.opt{display:none}}
+  @media(max-width:860px){nav .links a.sec{display:none}}
+  @media(max-width:520px){nav .wrap{gap:8px;padding:8px 14px;height:auto;flex-wrap:wrap} nav .links{gap:8px;margin-left:0;width:100%;justify-content:space-between} nav .btn{padding:.45em .7em;font-size:.82rem} .tgl{width:34px;height:34px}}
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(250,204,21,.18),transparent 70%);pointer-events:none}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;padding:74px 22px}
+  .hero h1{font-size:clamp(2.1rem,4.6vw,3.3rem);font-weight:800;letter-spacing:-.025em}
+  .hero p.lead{font-size:1.15rem;color:var(--mut);margin:1.1em 0 1.6em;max-width:44ch}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000}
+  .hero figure img{width:100%;height:auto;display:block}
+  .resumo{padding:38px 0 34px;border-bottom:1px solid var(--line)}
+  .resumo p{font-size:1.12rem;line-height:1.7;max-width:74ch;margin:.55em 0 0}
+  @media(max-width:780px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}}
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  section h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+  section .sub{color:var(--mut);margin:.6em 0 2em;max-width:66ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:540px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}
+  .card h3{font-size:1.05rem;margin-bottom:.4em}
+  .card p{color:var(--mut);font-size:.95rem;margin:0}
+  .card p+p{margin-top:.6em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .flow span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;font-size:.85rem;font-family:Sora;font-weight:600}
+  .flow .arr{color:var(--amb);border:none;background:none;padding:0 .1em}
+  pre{background:#0a0a0e;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;font-size:.86rem;line-height:1.6;color:#d6d6e0;margin:.4em 0 0}
+  pre .c{color:#7d7d8a} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
+  .step{display:grid;grid-template-columns:46px minmax(0,1fr);gap:16px;margin-bottom:28px}
+  .step>div{min-width:0}
+  .step .b{width:46px;height:46px;border-radius:12px;background:var(--fill);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step h3{font-size:1.12rem;margin-bottom:.3em}
+  .step p{color:var(--mut);margin:.2em 0 .5em}
+  .quem{display:inline-block;font-family:Sora;font-size:.75rem;letter-spacing:.06em;color:var(--txt);background:var(--tint);border:1px solid var(--line);border-radius:999px;padding:.1em .7em;margin-left:.5em;vertical-align:middle;font-weight:600}
+  footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:4px}
+  /* números */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  @media(max-width:720px){.stats{grid-template-columns:1fr}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .stat b{display:block;font:800 clamp(1.9rem,4vw,2.6rem)/1.05 Sora,sans-serif;letter-spacing:-.02em;color:var(--amb)}
+  body.light .stat b{color:var(--txt)}
+  .stat span{display:block;color:var(--mut);font-size:.93rem;margin-top:.5em}
+  .fonte{font-size:.86rem;color:var(--mut);margin-top:14px;max-width:80ch}
+  /* trocas */
+  .troca{display:grid;grid-template-columns:64px minmax(0,1fr);gap:18px;padding:26px 0;border-top:1px solid var(--line)}
+  .troca:first-of-type{border-top:none}
+  .troca .n{width:64px;height:64px;border-radius:14px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;font:800 1.6rem Sora,sans-serif;color:var(--amb)}
+  body.light .troca .n{color:var(--txt);background:var(--fill);border-color:var(--fill)}
+  .troca h3{font-size:1.3rem;margin-bottom:.35em}
+  .troca p{margin:.35em 0;max-width:72ch}
+  .troca .ex{margin-top:.8em;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--fill);border-radius:10px;padding:12px 16px;font-size:.95rem;color:var(--mut);max-width:76ch}
+  .troca .ex b{color:var(--txt)}
+  @media(max-width:540px){.troca{grid-template-columns:1fr}}
+  /* três finais */
+  .vs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px;max-width:900px}
+  @media(max-width:720px){.vs{grid-template-columns:1fr}}
+  .vs div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:.93rem}
+  .vs strong{display:block;font-family:Sora;margin-bottom:.25em}
+  .vs .r{display:block;margin-top:.5em;font-weight:600}
+  .vs .r.bad{color:var(--bad)} .vs .r.ok{color:var(--ok)}
+  .card ul{margin:8px 0 0;padding-left:20px}.card li{margin:5px 0}
+  /* prova */
+  .prova{background:var(--card);border:1px solid var(--amb);border-radius:16px;padding:26px 26px 22px;margin-top:6px}
+  body.light .prova{border-color:#EAB308}
+  .tl{list-style:none;margin:0;padding:0;counter-reset:t}
+  .tl li{position:relative;padding:0 0 18px 48px;counter-increment:t}
+  .tl li::before{content:counter(t);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:10px;background:var(--fill);color:#1a1206;font:800 .95rem/32px Sora,sans-serif;text-align:center}
+  .tl li::after{content:"";position:absolute;left:15px;top:36px;bottom:4px;width:2px;background:var(--line)}
+  .tl li:last-child::after{display:none}
+  .tl b{font-family:Sora}
+  blockquote{margin:6px 0 0;padding:14px 18px;border-left:3px solid var(--fill);background:var(--bg2);border-radius:0 10px 10px 0;font-size:1.02rem}
+  .prova .rod{font-size:.86rem;color:var(--mut);margin-top:14px}
+  /* parte técnica */
+  .techhead{background:var(--bg2);border-top:3px solid var(--fill);padding:58px 0 8px}
+  .techhead h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em;margin:.3em 0 0}
+  .techhead .sub{color:var(--mut);margin:.6em 0 1.2em;max-width:66ch}
+  .techzone{background:var(--bg2)}
+  .techzone .card{background:var(--card)}
+  .tbl{width:100%;border-collapse:collapse;font-size:.93rem}
+  .tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .tbl th{font-family:Sora;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+  @media(max-width:600px){.tbl thead{display:none} .tbl tr{display:block;border-bottom:1px solid var(--line);padding:6px 0} .tbl tr:last-child{border-bottom:none} .tbl td{display:block;border:none;padding:4px 14px}}
+  .shot{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+  .shot img{width:100%;height:auto;display:block}
+  .shot figcaption{padding:10px 14px;font-size:.88rem;color:var(--mut)}
+  .palco{display:flex;flex-direction:column;gap:.45em}
+  .palco .num{font:800 1.5rem/1 Sora,sans-serif;color:var(--amb)}
+  body.light .palco .num{color:var(--txt)}
+  .palco .tag{font-size:.82rem;color:var(--mut)}
+  .entrar{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="emoji">🤖</span> Imersão Jarvis 3D</a>
+  <span class="sep">|</span>
+  <span class="clubpro">
+    <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
+    <span class="sep">-</span>
+    <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
+  </span>
+  <div class="links">
+    <a class="sec" href="#explicado">O ganho</a>
+    <a class="sec" href="#dia">No seu dia</a>
+    <a class="sec opt" href="#como">Como funciona</a>
+    <a class="sec" href="#comecar">Como começar</a>
+    <a class="sec opt" href="#prova">A prova</a>
+    <span class="lang"><a class="on" href="./">PT</a><a href="en/">EN</a><a href="es/">ES</a></span>
+    <button class="tgl" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+    <a class="btn ghost" href="https://github.com/inematds/imersao-jarvis-3d" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow"></div>
+  <div class="wrap">
+    <div>
+      <span class="chip">Imersão Jarvis 3D · evento grátis no navegador</span>
+      <h1>Pare de explicar tudo de novo: monte um assistente que <span class="amb">lembra de você</span></h1>
+      <p class="lead">Você usa IA todo dia e ainda repete as mesmas explicações. Uma IA com permissão para agir ainda pode mexer no que não devia. Na Imersão Jarvis 3D, você percorre 6 etapas em um galpão virtual e recebe o caminho para montar o Jarvis, um assistente seu, que pede o seu OK antes do que é arriscado.</p>
+      <div class="cta">
+        <a class="btn" href="https://eventos.inema.club/imersao-jarvis-3d/" target="_blank" rel="noopener">Entrar no evento</a>
+        <a class="btn ghost" href="#explicado">O que você ganha</a>
+        <a class="btn ghost" href="#comecar">Como começar</a>
+      </div>
+      <p class="mut" style="font-size:.9rem;margin:14px 0 0;max-width:48ch">Entrar é grátis e imediato. Para montar o assistente, você cola comandos em uma janela do computador, o terminal. O caminho sem código foi testado só no Linux, um sistema alternativo ao Windows e ao macOS.</p>
+    </div>
+    <figure><img src="assets/banner.jpg" alt="Imersão Jarvis 3D: monte seu Jarvis em um hangar 3D no navegador"></figure>
+  </div>
+</header>
+
+<main>
+<section id="resumo" class="resumo"><div class="wrap">
+  <span class="chip">Em resumo</span>
+  <p><strong>A Imersão Jarvis 3D é um evento grátis que abre no navegador.</strong> Ela serve para quem usa IA todo dia e queria um assistente só seu, aqui chamado de Jarvis. Você percorre 6 etapas em um hangar, um galpão virtual em 3D. Cada etapa traz vídeo ou material, uma tarefa e um sinal claro de que ficou pronta. O caminho leva a um assistente que lembra de você e pede o seu OK antes de uma ação de risco. Você visita o evento pelo computador ou pelo celular, e as tarefas de montagem são feitas no computador.</p>
+  <figure style="margin:22px 0 0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000"><img src="assets/banner-grade.jpg" alt="Entre no hangar, veja no telão, faça a tarefa, encaixe a peça, 6 etapas e como foi feito" loading="lazy" style="width:100%;display:block"></figure>
+</div></section>
+
+<section id="video"><div class="wrap">
+  <span class="chip">Vídeo</span>
+  <h2>Veja por dentro em <span class="amb">3 minutos</span></h2>
+  <p class="sub">O vídeo mostra o hangar funcionando e o robô ganhando peças. Ele também conta, para quem cria páginas, como o projeto foi construído.</p>
+  <div style="aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line)"><iframe src="https://www.youtube-nocookie.com/embed/zH75hEE2pzE" title="Vídeo: Imersão Jarvis 3D por dentro" style="width:100%;height:100%;border:0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+  <p class="sub" style="margin-top:12px"><a href="https://www.youtube.com/watch?v=zH75hEE2pzE" target="_blank" rel="noopener">▶ Assistir no YouTube</a></p>
+</div></section>
+
+<section id="explicado"><div class="wrap">
+  <span class="chip">O ganho</span>
+  <h2>Da lista de links a um lugar onde você <span class="amb">faz acontecer</span></h2>
+  <p class="sub">O conteúdo já existia em uma página do INEMA, com cursos, guias e vídeos. O hangar coloca tudo em ordem e mostra o quanto você já avançou.</p>
+  <div class="grid g2">
+    <div class="card"><h3>😕 Em uma página comum</h3><p>Você vê muitos cursos e vídeos juntos e precisa decidir sozinho por onde começar.</p><p>Nada mostra o que você já fez nem o que falta para o assistente funcionar.</p></div>
+    <div class="card"><h3>🤖 No hangar</h3><p>Cada etapa tem um espaço próprio, o palco, com o que você ganha, o material, a tarefa e como saber que terminou.</p><p>Ao marcar a etapa, uma parte do robô encaixa. Você enxerga o seu avanço.</p></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="card"><h3>🧠 Ele lembra de você</h3><p>Na etapa 2, o assistente passa a guardar o que precisa de uma conversa para a outra.</p></div>
+    <div class="card"><h3>🔒 Risco passa por você</h3><p>Ele trabalha em uma cópia separada, sem as suas senhas, e pede o seu OK antes de uma ação de risco.</p></div>
+    <div class="card"><h3>🗺️ Ordem clara</h3><p>São 6 etapas, do primeiro teste até a melhoria de toda semana.</p></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <figure class="shot"><img src="assets/hangar.jpg" alt="Hangar 3D com os palcos e o robô ainda sem peças no centro" loading="lazy"><figcaption>Você chega: os palcos em volta e o robô ainda escuro, sem peças.</figcaption></figure>
+    <figure class="shot"><img src="assets/robo-pronto.jpg" alt="Robô branco completo no centro do hangar depois das 6 etapas" loading="lazy"><figcaption>Depois das 6 etapas: o robô completo.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="dia"><div class="wrap">
+  <span class="chip">No seu dia a dia</span>
+  <h2>O que muda quando o assistente <span class="amb">é seu</span></h2>
+  <p class="sub">Cada situação abaixo corresponde a uma etapa do evento.</p>
+  <div class="grid g2">
+    <div class="card"><h3>💬 "Já te expliquei esse relatório"</h3><p><strong>Hoje:</strong> a cada conversa nova, você repete o padrão do relatório e as regras do seu trabalho.</p><p><strong>Com o seu Jarvis:</strong> ele lembra do que você contou em outra conversa.</p></div>
+    <div class="card"><h3>📱 Longe do computador</h3><p><strong>Hoje:</strong> a IA que trabalha para você fica presa à tela da sua máquina.</p><p><strong>Com o seu Jarvis:</strong> com o computador ligado e o assistente rodando, você fala com ele pelo Telegram, e ele só aceita comandos do dono.</p></div>
+    <div class="card"><h3>😰 Medo de um estrago</h3><p><strong>Hoje:</strong> você não sabe até onde a IA pode mexer.</p><p><strong>Com o seu Jarvis:</strong> ele fica em uma pasta restrita, sem suas senhas, e pede o seu OK antes do que é arriscado.</p></div>
+    <div class="card"><h3>🔁 O mesmo erro de novo</h3><p><strong>Hoje:</strong> a falha acontece, você corrige na hora e ela volta.</p><p><strong>Com o seu Jarvis:</strong> a falha vai para um diário, e a revisão da semana mostra o que ajustar.</p></div>
+  </div>
+  <div class="prova" style="margin-top:22px">
+    <h3 style="margin-bottom:14px">Um palco, do começo ao fim</h3>
+    <ol class="tl">
+      <li><b>Você chega ao palco</b><br><span class="mut">e vê o que vai ganhar com aquela etapa.</span></li>
+      <li><b>Assiste no telão ou abre o material</b><br><span class="mut">Nos palcos com vídeo, ele toca ali mesmo.</span></li>
+      <li><b>Faz a tarefa no seu computador</b><br><span class="mut">O painel diz o que fazer e como saber que ficou pronto.</span></li>
+      <li><b>Marca como feita</b><br><span class="mut">A peça encaixa no robô, e o seu progresso fica salvo no navegador.</span></li>
+    </ol>
+  </div>
+  <figure class="shot" style="margin-top:22px"><img src="assets/telao.jpg" alt="Vídeo tocando no telão do palco, com o painel da etapa ao lado" loading="lazy"><figcaption>O vídeo no telão e, ao lado, o ganho, o material, a tarefa e o botão de marcar como feita.</figcaption></figure>
+</div></section>
+
+<section id="como"><div class="wrap">
+  <span class="chip">Como funciona</span>
+  <h2>Uma oficina, 6 bancadas e <span class="amb">8 peças</span></h2>
+  <p class="sub">Pense no hangar como uma oficina. Cada etapa acontece em uma bancada, chamada de palco, e cada peça do robô representa uma capacidade do seu assistente. O evento chama esse assistente de agente: uma IA que, além de responder, executa tarefas. O terminal é a janela do computador onde você cola comandos. O Linux é um sistema operacional, como o Windows e o macOS, e o Ubuntu é uma versão dele.</p>
+  <div class="grid g3">
+    <div class="card palco"><span class="num">01</span><h3>Entenda como um agente funciona</h3><p>Você roda um agente com IA grátis no seu computador e vê como ele usa as ferramentas.</p><span class="tag"><strong>Pede:</strong> computador e terminal. O curso usa Python, uma linguagem de programação. A IA é gratuita e roda no seu computador.</span></div>
+    <div class="card palco"><span class="num">02</span><h3>Monte o seu, com segurança</h3><p>Seu assistente lembra de você e trabalha em uma cópia separada, sem acesso às suas senhas.</p><span class="tag"><strong>Pede:</strong> computador, terminal e copiar comandos, sem escrever código. <strong>Sem pagar e em um computador comum, ele lembra o que você pede, mas quase não executa tarefas.</strong> Para agir melhor, use uma boa placa de vídeo ou uma IA paga na nuvem. A cópia separada usa o Docker, um programa que isola o assistente. Curso testado no Ubuntu.</span></div>
+    <div class="card palco"><span class="num">03</span><h3>Ponha no Telegram</h3><p>Você fala com um Jarvis que reconhece um único dono e segue as regras que você escreveu.</p><span class="tag"><strong>Pede:</strong> computador para montar. Depois, você conversa pelo celular. Quem seguiu <em>Seu Jarvis seguro</em> faz isso na aula 5. Ela foi testada com um Telegram simulado, então a conexão real pode precisar de ajustes.</span></div>
+    <div class="card palco"><span class="num">04</span><h3>Dê voz a ele</h3><p>Você conversa por voz. Ele ouve e responde no seu computador.</p><span class="tag"><strong>Pede:</strong> um computador forte: Mac com chip da Apple e 16 GB de memória ou mais, ou PC com placa de vídeo NVIDIA de 12 GB ou mais. A montagem usa o Claude Code ou o Codex, assistentes de programação. O guia da etapa traz os detalhes.</span></div>
+    <div class="card palco"><span class="num">05</span><h3>Veja tudo numa tela</h3><p>Um painel mostra as rotinas automáticas da sua máquina e o que ficou pendente, sem mexer em nada.</p><span class="tag"><strong>Pede:</strong> computador com Python. As rotinas automáticas são lidas do Linux.</span></div>
+    <div class="card palco"><span class="num">06</span><h3>Faça ele melhorar toda semana</h3><p>O diário de falhas mostra o que ajustar, e os números ajudam a decidir o que ele pode fazer sozinho.</p><span class="tag"><strong>Pede:</strong> um assistente já montado, para acompanhar.</span></div>
+  </div>
+  <p class="fonte"><strong>Você não precisa fazer tudo.</strong> Os cursos das etapas são independentes, e alguns montam um agente próprio. Escolha um caminho e siga nele. Em <em>Seu Jarvis seguro</em>, a aula 5 ensina a ligar o assistente ao celular, pelo Telegram.</p>
+  <h3 style="margin:30px 0 14px;font-size:1.2rem">As 8 peças, em palavras comuns</h3>
+  <div class="grid g4">
+    <div class="card"><h3>🗣️ Onde ele fala</h3><p>Terminal, Telegram, voz ou tela.</p></div>
+    <div class="card"><h3>💡 Qual modelo pensa</h3><p>A IA que responde. Pode ser trocada sem refazer o assistente.</p></div>
+    <div class="card"><h3>🪪 Quem ele é</h3><p>Um arquivo com a identidade e as regras dele.</p></div>
+    <div class="card"><h3>🧠 Do que ele lembra</h3><p>O que passa de uma conversa para a outra.</p></div>
+    <div class="card"><h3>🖐️ O que ele faz</h3><p>Cada ferramenta permite uma ação e tem limite de uso.</p></div>
+    <div class="card"><h3>🔒 O que ele não pode</h3><p>Pasta restrita, sem senhas. Risco pede o seu OK.</p></div>
+    <div class="card"><h3>✅ Como ele se confere</h3><p>Testa o que fez antes de dizer que terminou.</p></div>
+    <div class="card"><h3>📓 Como ele melhora</h3><p>Um diário do que falhou, usado a cada semana.</p></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>⚠️ O que o evento não promete</h3><ul>
+    <li>O robô do hangar representa o seu progresso. O assistente de verdade nasce das tarefas que você faz no seu computador.</li>
+    <li>Marcar uma etapa como feita não confere o seu trabalho. Quem confere é você, pelo item "pronto quando" de cada palco.</li>
+    <li>É uma página aberta, sem data e sem transmissão ao vivo. Você vai no seu ritmo.</li>
+  </ul></div>
+</div></section>
+
+<section id="comecar"><div class="wrap">
+  <span class="chip">Como começar</span>
+  <h2>Escolha o seu <span class="amb">ponto de partida</span></h2>
+  <p class="sub">Para entrar no evento, você não instala nada. Escreva um nome para o crachá, se quiser, e escolha entre o hangar 3D e a versão sem 3D. Depois, siga o caminho que combina com você.</p>
+  <div class="card" style="margin-bottom:16px"><h3>🖥️ Primeiro, veja o seu computador</h3><p><strong>Windows ou macOS:</strong> comece pela visita. O caminho sem código ainda não foi testado nesses sistemas.<br><strong>Linux com placa de vídeo forte:</strong> você pode seguir o caminho sem código completo.<br><strong>Linux sem placa de vídeo forte:</strong> o assistente lembra, mas quase não executa tarefas, a menos que você pague uma IA na nuvem, um serviço acessado pela internet.</p></div>
+  <div class="grid g2">
+    <div class="card"><h3>👀 Só quero conhecer</h3><p>Entre, ande pelos palcos e veja os vídeos. Funciona no computador e no celular, sem fazer nenhuma tarefa.</p></div>
+    <div class="card"><h3>🧩 Quero montar sem programar</h3><p>Vá direto à etapa 2, com o curso <a href="https://inematds.github.io/intelecto-v2-curso/" target="_blank" rel="noopener">Seu Jarvis seguro</a>. Você não escreve código, mas precisa abrir o terminal e copiar comandos. São 9 aulas, cerca de 2h20, fora a instalação. As aulas 6 e 7 usam o Docker.</p></div>
+    <div class="card"><h3>📱 Quero chegar ao Telegram</h3><p>O curso <a href="https://inematds.github.io/agente-por-pecas-v73/" target="_blank" rel="noopener">Agente por peças</a> monta um agente próprio. <strong>É o caminho mais técnico:</strong> pede terminal, Python, git e Node.js, e funciona no Linux, no macOS e, no Windows, pelo WSL, o Linux dentro do Windows. A IA vem da sua assinatura do ChatGPT, pelo Codex, ou de um programa instalado no seu computador.</p></div>
+    <div class="card"><h3>💻 Quero entender por dentro</h3><p>Comece pela etapa 1, com o curso <a href="https://inematds.github.io/agentes-do-zero-v72/" target="_blank" rel="noopener">Sistema de agentes do zero</a>, que roda um agente em Python, uma linguagem de programação.</p></div>
+  </div>
+  <div class="entrar">
+    <a class="btn" href="https://eventos.inema.club/imersao-jarvis-3d/" target="_blank" rel="noopener">Entrar no evento</a>
+    <a class="btn ghost" href="https://eventos.inema.club/" target="_blank" rel="noopener">Menu de eventos</a>
+  </div>
+</div></section>
+
+<section id="prova"><div class="wrap">
+  <span class="chip">A prova</span>
+  <h2>Você pode conferir <span class="amb">como isso foi feito</span></h2>
+  <p class="sub">Duas IAs que programam construíram o evento. O Codex escreveu a programação e o site. O Claude Code escreveu os pedidos, testou em um navegador de verdade e reprovou o que não estava bom. Nada disso é cobrado de quem participa.</p>
+  <div class="stats">
+    <div class="stat"><b>8</b><span>rodadas de trabalho do Codex até o evento ficar pronto</span></div>
+    <div class="stat"><b>34 min 40 s</b><span>de trabalho do Codex, sem contar a preparação e as revisões</span></div>
+    <div class="stat"><b>US$ 7,63</b><span>custaria esse uso se fosse pago por consumo. Ele foi feito dentro de uma assinatura</span></div>
+  </div>
+  <div class="prova" style="margin-top:22px">
+    <h3 style="margin-bottom:14px">O que deu errado no caminho</h3>
+    <ol class="tl">
+      <li><b>O 3D ficou preso em uma caixa pequena</b><br><span class="mut">Virou uma imersão em tela cheia.</span></li>
+      <li><b>O robô parecia um boneco</b><br><span class="mut">Ganhou um acabamento de robô industrial.</span></li>
+      <li><b>O robô já aparecia pronto antes da primeira etapa</b><br><span class="mut">Agora ele começa escuro e ganha as peças conforme você avança.</span></li>
+      <li><b>O vídeo abria no painel lateral</b><br><span class="mut">Passou a tocar no telão, no tamanho certo.</span></li>
+    </ol>
+    <p class="rod">Pedidos, respostas, tempo, custo, revisões e capturas estão em <a href="https://eventos.inema.club/imersao-jarvis-3d/processo/" target="_blank" rel="noopener">Como foi feito</a>.</p>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <span class="chip">Perguntas comuns</span>
+  <h2>Antes de você <span class="amb">entrar</span></h2>
+  <div class="grid g2">
+    <div class="card"><h3>Quanto custa?</h3><p>O evento, os cursos e os guias são grátis. Em <em>Seu Jarvis seguro</em>, a IA na sua máquina não tem custo, e a IA na nuvem é paga. O curso Agente por peças usa a sua assinatura do ChatGPT ou uma IA instalada no computador, e a etapa de voz usa o Claude Code ou o Codex na montagem. Esses serviços têm regras e planos próprios, então confira o seu antes de começar.</p></div>
+    <div class="card"><h3>Preciso de cadastro?</h3><p>Não. O nome do crachá é opcional, e o progresso fica salvo no seu navegador.</p></div>
+    <div class="card"><h3>Funciona no celular?</h3><p>A visita funciona, com controle por toque ou na versão sem 3D. Para montar o assistente, você precisa de um computador.</p></div>
+    <div class="card"><h3>E se o 3D não abrir?</h3><p>O evento passa para a versão sem 3D, com a mesma programação e o mesmo progresso.</p></div>
+    <div class="card"><h3>Preciso saber programar?</h3><p>Para visitar, não. Para montar sem escrever código, siga <a href="https://inematds.github.io/intelecto-v2-curso/" target="_blank" rel="noopener">Seu Jarvis seguro</a>. Ele pede que você abra o terminal e copie comandos, e duas aulas usam o Docker, um programa que isola o assistente.</p></div>
+    <div class="card"><h3>Meu computador dá conta?</h3><p>Depende da etapa, e a de voz é a mais exigente. <em>Seu Jarvis seguro</em> foi testado no Ubuntu. No macOS, não foi testado na prática. No Windows, depende do WSL, o Linux dentro do Windows, e essa combinação também não foi testada.</p></div>
+    <div class="card"><h3>Dá para falar com ele pelo celular?</h3><p>Dá, depois de montar, com o computador ligado e o assistente rodando. Em <em>Seu Jarvis seguro</em>, o Telegram é a aula 5. Ela foi testada com um Telegram simulado, então a conexão real pode precisar de ajustes. <a href="https://inematds.github.io/agente-por-pecas-v73/" target="_blank" rel="noopener">Agente por peças</a> é outro caminho.</p></div>
+    <div class="card"><h3>O ChatGPT já não tem memória?</h3><p>Ele tem recursos próprios de memória. Aqui, você monta um assistente com regras escritas por você, que executa tarefas na sua máquina e pede o seu OK antes do que é arriscado.</p></div>
+    <div class="card"><h3>O evento monta o assistente por mim?</h3><p>Não. Ele organiza o caminho, e você faz as tarefas. O robô do hangar só mostra o seu avanço.</p></div>
+  </div>
+  <p style="margin:24px 0 0;font-size:1.1rem;max-width:66ch"><strong>E você: o que gostaria que o seu Jarvis lembrasse para não ter de explicar tudo de novo amanhã?</strong> Grátis no inema.club, direto na internet.</p>
+  <div class="entrar"><a class="btn" href="https://eventos.inema.club/imersao-jarvis-3d/" target="_blank" rel="noopener">Entrar no evento</a></div>
+</div></section>
+
+<section id="sua-pagina"><div class="wrap">
+  <span class="chip">Para quem cria páginas</span>
+  <h2>Transforme uma página sua em <span class="amb">um lugar assim</span></h2>
+  <p class="sub">O Claude Code e o Codex são assistentes de programação. Abra um deles na pasta do seu site e cole o pedido abaixo. A IA estuda este projeto, olha a sua página e mostra um plano antes de mudar qualquer coisa.</p>
+  <div class="pedido" style="position:relative">
+<pre id="pedidoTxt" style="white-space:pre-wrap">Leia o projeto "Imersão Jarvis 3D" em https://github.com/inematds/imersao-jarvis-3d (comece pelo README) e veja o processo em https://eventos.inema.club/imersao-jarvis-3d/processo/.
+Use esse projeto só como referência. Depois olhe a minha página neste projeto e me responda em português simples:
+1. O que aqui poderia virar etapas, com material, tarefa e um sinal claro de "pronto"?
+2. O que a pessoa veria avançar a cada etapa?
+3. Vale a pena fazer em 3D, ou uma versão sem 3D resolve?
+Não mude nada ainda. Mostre o plano e espere eu dizer sim.</pre>
+    <button class="btn" id="copiarPedido" style="margin-top:10px">Copiar o pedido</button>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>🛠️ Prefere ver os arquivos?</h3><p>O código é público no GitHub, com as instruções para abrir o evento na sua máquina.</p><p><a class="btn ghost" href="https://github.com/inematds/imersao-jarvis-3d#instalação-técnica" target="_blank" rel="noopener">Ver a parte técnica</a></p></div>
+</div></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="pill">Navegador</div><div class="pill">3D</div><div class="pill">6 etapas</div><div class="pill">Grátis</div>
+    <p style="margin-top:18px">Imersão Jarvis 3D · grátis no inema.club, direto na internet ·
+      <a href="https://github.com/inematds/imersao-jarvis-3d">inematds/imersao-jarvis-3d</a> ·
+      <a href="https://inema.club">INEMA.CLUB</a></p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var KEY='imersao-jarvis-3d-guia-theme';
+    var b=document.body, t=document.getElementById('themeToggle');
+    try{ if(localStorage.getItem(KEY)==='light'){ b.classList.add('light'); t.textContent='☀️'; } }catch(e){}
+    t.addEventListener('click',function(){
+      var light=b.classList.toggle('light');
+      t.textContent=light?'☀️':'🌙';
+      try{ localStorage.setItem(KEY, light?'light':'dark'); }catch(e){}
+    });
+  })();
+  (function(){
+    var bt=document.getElementById('copiarPedido'), tx=document.getElementById('pedidoTxt');
+    if(!bt||!tx) return;
+    var rotulo=bt.textContent;
+    bt.addEventListener('click',function(){
+      try{ navigator.clipboard.writeText(tx.textContent).then(function(){ bt.textContent='Copiado ✓'; setTimeout(function(){bt.textContent=rotulo;},2000); }); }catch(e){}
+    });
+  })();
+</script>
+</body>
+</html>
