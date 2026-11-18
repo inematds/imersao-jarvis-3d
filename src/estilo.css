@@ -107,3 +107,14 @@ dialog .cab{margin-bottom:20px}
  #menu{padding:8px}
  #rodape{gap:4px}
 }
+dialog[open]{display:flex;flex-direction:column;overflow:hidden}
+dialog .cab{flex:none}
+dialog #sessao{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:4px}
+#acoesPalco:empty{display:none}
+#acoesPalco{flex:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+#acoesPalco button{width:100%}
+body:has(dialog[open]) #proximo{display:none}
+@media(max-width:720px){
+ dialog[open]{height:62dvh;padding:14px 16px max(14px,env(safe-area-inset-bottom))}
+ dialog .cab{margin-bottom:8px}
+}

@@ -5,14 +5,14 @@ export function controles(camera,canvas,piso,alvos,visitar,toque,movimento) {
   const mapa={w:'frente',arrowup:'frente',s:'tras',arrowdown:'tras',a:'esquerda',arrowleft:'esquerda',d:'direita',arrowright:'direita'};
   const raio=new Raycaster(), ponteiro=new Vector2();
   let toqueInicial=null, arrastou=false, rota=[], aoChegar=null;
-  let vx=0,vz=0,joyX=0,joyZ=0;
+  let joyX=0,joyZ=0;
   let moveu=false;
   function mover(){if(!moveu){movimento();moveu=true;}}
   const limite=9.1, obstaculo=1.38;
   canvas.tabIndex=0;
   canvas.setAttribute('aria-label','Hangar 3D. Use WASD ou as setas para caminhar.');
   camera.rotation.order='YXZ';
-  function parar() { teclas.clear(); soltar(); rota=[]; aoChegar=null; vx=vz=0; }
+  function parar() { teclas.clear(); soltar(); rota=[]; aoChegar=null; }
   canvas.onkeydown=e=>{
     const dir=mapa[e.key.toLowerCase()];
     if (dir) { e.preventDefault(); teclas.add(e.key.toLowerCase()); rota=[]; }
@@ -87,19 +87,29 @@ export function controles(camera,canvas,piso,alvos,visitar,toque,movimento) {
   function quadro(dt) {
     if(rota.length){
       mover();
-      const p=rota[0],dx=p.x-camera.position.x,dz=p.z-camera.position.z;
-      const dist=Math.hypot(dx,dz), passo=Math.min(dist,2.65*dt);
-      camera.position.x+=dx/(dist||1)*passo; camera.position.z+=dz/(dist||1)*passo;
-      if(dist<=passo+.001){rota.shift(); if(!rota.length)aoChegar?.();}
+      let restante=3*dt;
+      while(rota.length && restante>0){
+        const p=rota[0],dx=p.x-camera.position.x,dz=p.z-camera.position.z;
+        const dist=Math.hypot(dx,dz);
+        if(dist>restante){
+          camera.position.x+=dx*restante/dist;
+          camera.position.z+=dz*restante/dist;
+          break;
+        }
+        camera.position.x=p.x;camera.position.z=p.z;
+        restante-=dist;
+        rota.shift();
+        if(!rota.length)aoChegar?.();
+      }
       return;
     }
     const dirs=new Set([...teclas].map(k=>mapa[k]));
     const x=joyX+Number(dirs.has('direita'))-Number(dirs.has('esquerda')),z=joyZ+Number(dirs.has('tras'))-Number(dirs.has('frente'));
     if(x||z)mover();
-    const yaw=camera.rotation.y,k=2.2/Math.max(1,Math.hypot(x,z)), blend=1-Math.exp(-12*dt);
-    vx+=((x*Math.cos(yaw)+z*Math.sin(yaw))*k-vx)*blend;
-    vz+=((z*Math.cos(yaw)-x*Math.sin(yaw))*k-vz)*blend;
-    camera.position.x+=vx*dt; camera.position.z+=vz*dt; limitar(camera.position);
+    const yaw=camera.rotation.y,passo=3*dt/Math.max(1,Math.hypot(x,z));
+    camera.position.x+=(x*Math.cos(yaw)+z*Math.sin(yaw))*passo;
+    camera.position.z+=(z*Math.cos(yaw)-x*Math.sin(yaw))*passo;
+    limitar(camera.position);
   }
   return {ir,quadro,parar};
 }

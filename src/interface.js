@@ -59,6 +59,7 @@ function iniciar(dados) {
     if(!painelAtual)return;
     const foco=origem;
     painelAtual=null;palcoAtual=null;
+    el('acoesPalco').replaceChildren();
     if(painel.open)painel.close();
     conteiner.append(corpo);corpo.replaceChildren();
     if(modo==='3d')mundo?.focar();
@@ -67,6 +68,8 @@ function iniciar(dados) {
   function abrir(tipo,contexto,titulo){
     if(!painelAtual)origem=document.activeElement;
     painelAtual=tipo;
+    el('acoesPalco').replaceChildren();
+    corpo.scrollTop=0;
     el('contexto').textContent=contexto;
     const h=criar('h2',titulo);h.id='tituloPainel';h.tabIndex=-1;corpo.replaceChildren(h);
     if(tipo==='sessao' && modo==='sem-3d'){
@@ -131,7 +134,7 @@ function iniciar(dados) {
     secao('Encaixe no robô',p.pecas.map(id=>pecas.find(item=>item.id===id).parte_robo).join(' · '));
     const feita=salvo.feitas.includes(n);
     const marcarBtn=botao(feita?'Etapa feita':'Marcar como feita',()=>marcar(n));
-    marcarBtn.id='marcar';marcarBtn.disabled=feita;corpo.append(marcarBtn);
+    marcarBtn.id='marcar';marcarBtn.disabled=feita;(modo==='3d'?el('acoesPalco'):corpo).append(marcarBtn);
   }
   function irPara(n){
     if(!obter(n))return;

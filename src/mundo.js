@@ -27,20 +27,26 @@ function tela(p) {
   linhas.forEach((l,i)=>ctx.fillText(l,42,315+(i-(linhas.length-1)/2)*tamanho*1.08));
   const textura=new T.CanvasTexture(c);
   textura.colorSpace=T.SRGBColorSpace;
-  return new T.MeshBasicMaterial({map:textura});
+  return new T.MeshBasicMaterial({map:textura,toneMapped:false});
 }
 
 export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
   const render=new T.WebGLRenderer({antialias:true,powerPreference:'low-power'});
   render.setPixelRatio(Math.min(devicePixelRatio,2));
+  const celular=matchMedia('(max-width: 720px), (pointer: coarse)').matches;
+  render.shadowMap.enabled=true;
+  render.shadowMap.autoUpdate=false;
+  render.shadowMap.needsUpdate=true;
+  render.shadowMap.type=T.PCFSoftShadowMap;
+  render.toneMapping=T.ACESFilmicToneMapping;
   const cena=new T.Scene();
-  cena.background=new T.Color(0x19191b);
-  cena.fog=new T.FogExp2(0x242020,.017);
-  const camera=new T.PerspectiveCamera(65,1,.06,75);
-  camera.position.set(0,1.67,8.9); camera.lookAt(0,2.05,0);
-  const concreto=new T.MeshStandardMaterial({color:0x515150,roughness:.36,metalness:.14});
-  const aco=new T.MeshStandardMaterial({color:0x3c4044,metalness:.42,roughness:.52});
-  const faixa=new T.MeshBasicMaterial({color:0xe4a23d});
+  cena.background=new T.Color(0x101117);
+  cena.fog=new T.FogExp2(0x15151a,.025);
+  const camera=new T.PerspectiveCamera(70,1,.06,75);
+  camera.position.set(0,2.48,4); camera.lookAt(0,1.55,0);
+  const concreto=new T.MeshStandardMaterial({color:0x303239,roughness:.36,metalness:.24});
+  const aco=new T.MeshStandardMaterial({color:0x31343a,metalness:.42,roughness:.52});
+  const faixa=new T.MeshBasicMaterial({color:0xf8a33e,toneMapped:false});
   const lampada=new T.MeshBasicMaterial({color:0xffdea3});
   const caixa=new T.BoxGeometry();
   function bloco(pai,mat,x,y,z,w,h,d) {
@@ -48,6 +54,7 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
     m.position.set(x,y,z); m.scale.set(w,h,d); pai.add(m); return m;
   }
   const piso=bloco(cena,concreto,0,-.16,0,38,.32,36);
+  piso.receiveShadow=true;
   const juntaPiso=new T.MeshStandardMaterial({color:0x363737,roughness:.8});
   for(let i=-15;i<=15;i+=5){
     bloco(cena,juntaPiso,i,.002,0,.018,.003,34);
@@ -64,19 +71,40 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
       bloco(cena,aco,lado*14.8,6.65,z,.25,3.5,.34).rotation.z=-lado*.75;
     }
   }
-  cena.add(new T.HemisphereLight(0xf2f4fa,0x818794,1.65));
-  const sol=new T.DirectionalLight(0xfff4e4,2.4);
-  sol.position.set(-4,8,5);cena.add(sol);
-  const foco=new T.PointLight(0xffefdb,29,14); foco.position.set(0,5,1); cena.add(foco);
-  const base=new T.Mesh(new T.CylinderGeometry(1.05,1.18,.16,48),aco);
-  base.position.y=.08;cena.add(base);
+  cena.add(new T.HemisphereLight(0xe5ebfb,0x53525b,.88));
+  const sol=new T.DirectionalLight(0xfff2df,2.25);
+  sol.position.set(-7,12,6);
+  sol.castShadow=true;
+  const resolucao=celular?1024:2048;
+  sol.shadow.mapSize.set(resolucao,resolucao);
+  Object.assign(sol.shadow.camera,{left:-15,right:15,top:15,bottom:-15,near:.1,far:38});
+  sol.shadow.camera.updateProjectionMatrix();
+  sol.shadow.normalBias=.012;
+  cena.add(sol);
+  const foco=new T.SpotLight(0xffdec2,85,13,.49,.9);
+  foco.position.set(-1.7,5,2.8);cena.add(foco,foco.target);
+  const recorte=new T.SpotLight(0xffaa53,110,12,.56,.72);
+  recorte.position.set(1.8,4,-2.5);recorte.target.position.y=1.4;
+  cena.add(recorte,recorte.target);
+  const base=new T.Mesh(new T.CylinderGeometry(.83,.96,.16,64),aco);
+  base.position.y=.08;base.castShadow=true;base.receiveShadow=true;cena.add(base);
+  const c=document.createElement('canvas');c.width=c.height=128;
+  const ctx=c.getContext('2d'), grad=ctx.createRadialGradient(64,64,0,64,64,64);
+  grad.addColorStop(0,'rgba(255,207,144,.24)');
+  grad.addColorStop(.4,'rgba(255,191,111,.12)');
+  grad.addColorStop(1,'rgba(255,171,90,0)');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,128,128);
+  const brilho=new T.Mesh(new T.PlaneGeometry(4.8,4.8),new T.MeshBasicMaterial({
+    map:new T.CanvasTexture(c),transparent:true,depthWrite:false,blending:T.AdditiveBlending
+  }));
+  brilho.rotation.x=-Math.PI/2;brilho.position.y=.006;cena.add(brilho);
   const anel=new T.Mesh(new T.RingGeometry(1.25,1.28,64),faixa);
   anel.rotation.x=-Math.PI/2;anel.position.y=.012;cena.add(anel);
-  const pedestal=new T.Group();pedestal.position.y=.16;cena.add(pedestal);
+  const pedestal=new T.Group();pedestal.scale.setScalar(1.09);pedestal.position.y=.16;cena.add(pedestal);
   const robo=criarRobo(pedestal);
   const pontos=new Map(),alvos=[];
   for(const p of palcos){
-    const ang=T.MathUtils.degToRad(-112+(p.numero-1)*56);
+    const ang=T.MathUtils.degToRad([-112,-38,0,38,112,168][p.numero-1]);
     const palco=new T.Group();
     palco.position.set(Math.sin(ang)*10.5,0,-Math.cos(ang)*10.5);
     palco.rotation.y=-ang; cena.add(palco);
@@ -87,15 +115,19 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
     ];
     const painel=new T.Mesh(new T.PlaneGeometry(6.32,3.16),tela(p));
     for(const x of [-2.35,2.35])bloco(palco,aco,x,1.83,-.18,.18,3.35,.28);
+    bloco(palco,faixa,0,3.24,-.05,6.48,.035,.05);
+    palco.traverse(m=>{if(m.isMesh && m.material===aco){m.castShadow=true;m.receiveShadow=true;}});
     painel.position.set(0,4.9,-.045);palco.add(painel);
     for (const m of [...objetos,painel]) {m.userData.numero=p.numero;alvos.push(m);}
     for(let i=2;i<=8;i+=1.35)bloco(palco,faixa,0,.009,i,.075,.016,.74);
-    pontos.set(p.numero,{destino:palco.position.clone().multiplyScalar(.42),olhar:new T.Vector3(palco.position.x,4.35,palco.position.z)});
+    pontos.set(p.numero,{destino:palco.position.clone().multiplyScalar(5.5/10.5),olhar:new T.Vector3(palco.position.x,1.67,palco.position.z)});
   }
   container.replaceChildren(render.domElement);
   let ativo=false,anterior=0;
   const reduz=matchMedia('(prefers-reduced-motion: reduce)');
+  let emSessao=false;
   function posicionar(n){
+    emSessao=true;
     const {destino,olhar}=pontos.get(n);
     cancelarGiro();controle.parar();camera.position.set(destino.x,1.67,destino.z);camera.lookAt(olhar);
   }
@@ -109,17 +141,28 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
   }
   const observer=new ResizeObserver(tamanho);observer.observe(container);
   function quadro(t){
-    const dt=Math.min(.05,(t-anterior)/1000);anterior=t;
-    if(giro)giro(t);
-    else if(!document.querySelector('dialog[open]'))controle.quadro(dt);
+    const dt=T.MathUtils.clamp((t-anterior)/1000,0,.5);anterior=t;
     const painel=document.querySelector('dialog[open]');
+    if(giro)giro(t);
+    else if(!painel){
+      const passos=Math.ceil(dt/.05);
+      for(let i=0;i<passos;i++)controle.quadro(dt/passos);
+    }
     const w=container.clientWidth,h=container.clientHeight;
-    const zoom=painel && w<=720?Math.max(.33,1-painel.offsetHeight/h):1;
-    if(camera.zoom!==zoom){camera.zoom=zoom;camera.updateProjectionMatrix();}
-    if(painel && w>720)camera.setViewOffset(w,h,painel.offsetWidth/2,0,w,h);
-    else if(painel)camera.setViewOffset(w,h,0,painel.offsetHeight/2,w,h);
-    else if(camera.view?.enabled)camera.clearViewOffset();
-    robo.quadro(dt);render.render(cena,camera);
+    if(painel && w && h){
+      const rect=painel.getBoundingClientRect();
+      const livreW=w<=720?w:rect.left, topo=Math.min(76,h*.12);
+      const livreH=(w<=720?rect.top:h)-topo;
+      // A lente deslocada mantém paralelas as bordas do telão elevado.
+      const px=h/(2*Math.tan(T.MathUtils.degToRad(camera.fov/2))*5.045);
+      const zoom=emSessao?Math.min(livreW*.9/(6.55*px),livreH*.88/(3.38*px)):Math.min(1,livreW/w,livreH/h);
+      camera.zoom=Math.max(.01,zoom);
+      camera.setViewOffset(w,h,(w-livreW)/2,(h-livreH)/2-topo-(emSessao?(4.9-1.67)*px*camera.zoom:0),w,h);
+    }else if(camera.view?.enabled){
+      camera.zoom=1;camera.clearViewOffset();
+    }
+    if(robo.quadro(dt))render.shadowMap.needsUpdate=true;
+    render.render(cena,camera);
   }
   function mostrar(sim){
     cancelarGiro();controle.parar();ativo=sim;tamanho();anterior=performance.now();render.setAnimationLoop(sim?quadro:null);
@@ -156,7 +199,10 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
     controle.parar();camera.position.set(.72,1.67,3.05);camera.lookAt(0,1.4,0);
   }
   return {mostrar,posicionar,verRobo,cancelarGiro,enquadrarVisor,
-    focar:()=>render.domElement.focus({preventScroll:true}),
+    focar:()=>{emSessao=false;render.domElement.focus({preventScroll:true});},
     estado:()=>({posicao:{x:camera.position.x,z:camera.position.z},direcao:camera.rotation.y}),
-    atualizar:(ids,completo,animar)=>robo.atualizar(ids,completo,animar&&!reduz.matches)};
+    atualizar(ids,completo,animar){
+      robo.atualizar(ids,completo,animar&&!reduz.matches);
+      render.shadowMap.needsUpdate=true;
+    }};
 }

@@ -4,78 +4,95 @@ export function criarRobo(cena) {
   const chassis=new T.Group();
   cena.add(chassis);
   const material=(color,roughness,metalness)=>new T.MeshStandardMaterial({color,roughness,metalness});
-  const grafite=material(0x373b41,.52,.38), eixo=material(0x646b75,.48,.5);
-  const vidro=material(0x090b10,.21,.28);
+  const perola=material(0xe0e0d9,.4,.35), titanio=material(0x849097,.42,.46);
+  const junta=material(0x17191d,.36,.36), vidro=material(0x080a0d,.14,.52);
+  // Reflexos de duas caixas de luz no verniz e no visor, em um estúdio escuro.
+  const estudio=document.createElement('canvas');
+  estudio.width=256;estudio.height=128;
+  const luz=estudio.getContext('2d');
+  luz.fillStyle='#15171b';luz.fillRect(0,0,256,128);
+  luz.fillStyle='#dedfdf';luz.fillRect(45,24,11,53);
+  luz.fillStyle='#a9b6c3';luz.fillRect(148,18,38,17);
+  luz.fillStyle='#d9a170';luz.fillRect(211,35,5,39);
+  const reflexos=new T.CanvasTexture(estudio);
+  reflexos.mapping=T.EquirectangularReflectionMapping;
+  reflexos.colorSpace=T.SRGBColorSpace;
+  for(const mat of [perola,titanio,junta,vidro])mat.envMap=reflexos;
   const pecas=new Map();
   function armadura(id){
     const grupo=new T.Group();
-    grupo.name=id;grupo.visible=false;chassis.add(grupo);
-    grupo.userData.metal=material(0xb9bdc4,.58,.32);
+    grupo.name=id;
+    grupo.visible=false;
+    grupo.userData.metal=perola.clone();
+    chassis.add(grupo);
     pecas.set(id,grupo);
     return grupo;
   }
-  const cubo=new T.BoxGeometry();
-  const cilindro=new T.CylinderGeometry(.5,.5,1,10);
-  // Painel estampado, mais estreito na ponta inferior e com os quatro cantos cortados.
-  const perfil=new T.Shape();
-  const pontos=[[-.32,-.48],[.32,-.48],[.40,-.38],[.49,.32],[.36,.48],[-.36,.48],[-.49,.32],[-.40,-.38]];
-  pontos.forEach(([x,y],i)=>i?perfil.lineTo(x,y):perfil.moveTo(x,y));perfil.closePath();
-  const placa=new T.ExtrudeGeometry(perfil,{depth:.84,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.035,bevelThickness:.08});
-  placa.center();
-  function montar(grupo,geo,mat,x,y,z,w,h,d){
-    const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(w,h,d);grupo.add(m);return m;
+  // Perfis de revolução: raio e altura em unidades da própria peça.
+  function perfil(pontos,inicio=0,arco=2*Math.PI){
+    return new T.LatheGeometry(pontos.map(([r,y])=>new T.Vector2(r,y)),40,inicio,arco);
   }
-  const estrutura=(geo,mat,...medidas)=>montar(chassis,geo,mat,...medidas);
-  const vestir=(grupo,...medidas)=>montar(grupo,placa,grupo.userData.metal,...medidas);
+  const elipse=new T.SphereGeometry(1,28,20);
+  const casco=[[0,-1],[.37,-.96],[.64,-.76],[.83,-.39],[.96,.04],[1,.43],[.94,.67],[.76,.86],[.44,.97],[0,1]];
+  const capacete=perfil(casco);
+  const face=perfil(casco,-1.13,2.26);
+  const torax=perfil([[0,-1],[.58,-.99],[.66,-.9],[.8,-.32],[.98,.32],[1,.53],[.94,.71],[.7,.91],[.43,1],[0,1]]);
+  const membro=perfil([[0,-1],[.49,-.99],[.61,-.91],[.68,-.48],[.88,.02],[1,.48],[.99,.72],[.89,.89],[.64,1],[0,1]]);
+  const placa=perfil([[.73,-.92],[.8,-.89],[.87,-.77],[1,.18],[1,.63],[.96,.72],[.89,.75]],-.94,1.88);
+  const falange=new T.CapsuleGeometry(1,1.4,3,8);
+  function montar(pai,geo,mat,x,y,z,w,h,d){
+    const m=new T.Mesh(geo,mat);
+    m.position.set(x,y,z);m.scale.set(w,h,d);
+    m.castShadow=true;m.receiveShadow=true;pai.add(m);
+    return m;
+  }
+  const base=(geo,mat,...medidas)=>montar(chassis,geo,mat,...medidas);
+  const encaixe=(g,geo,...medidas)=>montar(g,geo,g.userData.metal,...medidas);
   const cranio=armadura('modelo'),gola=armadura('canal'),peito=armadura('identidade');
   const nuca=armadura('memoria'),mao=armadura('ferramentas'),punho=armadura('travas');
-  const ombros=armadura('testes'),costas=armadura('diario');
+  const ombro=armadura('testes'),costas=armadura('diario');
 
-  estrutura(cubo,grafite,0,1.48,-.045,.13,.72,.13);
-  estrutura(placa,grafite,0,1.10,0,.39,.19,.22);
-  estrutura(cubo,eixo,0,1.73,0,.65,.08,.13);
-  estrutura(cilindro,eixo,0,1.90,0,.095,.16,.095);
-  estrutura(placa,grafite,0,2.055,0,.22,.29,.17);
-  // A superfície frontal curva acompanha as têmporas desde a primeira visita.
-  const viseira=new T.CylinderGeometry(1,1,1,24,1,true,-1.40,2.80);
-  estrutura(viseira,vidro,0,2.075,.004,.151,.113,.146);
-  const linha=estrutura(viseira,new T.MeshBasicMaterial({color:0xffbf48}),0,2.07,.006,.153,.008,.148);
+  base(capacete,titanio,0,2.075,0,.148,.202,.148);
+  encaixe(cranio,capacete,0,2.075,0,.151,.204,.151);
+  base(face,vidro,0,2.075,.004,.154,.201,.154);
+  const linha=base(elipse,new T.MeshBasicMaterial({color:0xffbd67}),0,2.125,.162,.055,.002,.003);
   linha.visible=false;
-  vestir(cranio,0,2.16,-.003,.283,.081,.233);
-  vestir(cranio,0,1.99,.065,.218,.085,.131);
-  vestir(nuca,0,2.06,-.099,.267,.215,.13);
-  vestir(gola,0,1.88,.018,.286,.098,.242);
-  vestir(peito,0,1.635,.060,.585,.30,.236);
-  vestir(peito,0,1.375,.048,.32,.19,.19);
-  vestir(costas,0,1.58,-.14,.47,.39,.145);
-  vestir(costas,0,1.12,-.06,.43,.18,.235);
+  base(membro,junta,0,1.88,-.009,.078,.108,.079);
+  encaixe(gola,membro,0,1.84,.016,.087,.044,.083);
+  encaixe(nuca,elipse,0,1.992,-.104,.082,.089,.046);
+  base(torax,titanio,0,1.60,-.014,.285,.228,.149);
+  encaixe(peito,torax,0,1.602,.013,.29,.219,.16);
+  encaixe(costas,torax,0,1.58,-.116,.202,.179,.077);
+  for(let i=0;i<3;i++)
+    base(torax,i===1?titanio:junta,0,1.207+i*.075,0,.155+i*.012,.055,.115+i*.008);
+  base(torax,perola,0,1.079,-.008,.213,.123,.132);
   for(const lado of [-1,1]){
-    const x=lado*.135;
-    estrutura(cubo,eixo,lado*.148,1.48,0,.044,.34,.071).rotation.z=-lado*.19;
-    estrutura(placa,grafite,x,.82,0,.135,.43,.147);
-    estrutura(cilindro,eixo,x,.598,0,.12,.10,.12).rotation.z=Math.PI/2;
-    estrutura(placa,grafite,x,.347,-.015,.10,.41,.106);
-    estrutura(cilindro,eixo,x+lado*.06,.38,-.028,.03,.33,.03);
-    estrutura(placa,grafite,x,.077,.052,.168,.135,.292);
-    vestir(peito,x,.838,.04,.197,.417,.176);
-    vestir(costas,x,.342,.020,.149,.408,.16);
-    vestir(costas,x,.098,.079,.174,.104,.269);
-    const braco=lado*.38, pulso=lado*.422;
-    estrutura(cilindro,eixo,braco,1.71,0,.137,.12,.137).rotation.z=Math.PI/2;
-    estrutura(placa,grafite,braco,1.54,0,.091,.285,.106).rotation.z=lado*.105;
-    estrutura(cilindro,eixo,lado*.397,1.393,0,.092,.086,.092).rotation.z=Math.PI/2;
-    estrutura(placa,grafite,pulso,1.245,.013,.086,.243,.09);
-    estrutura(cubo,grafite,pulso,1.04,.028,.093,.14,.061);
-    vestir(ombros,braco,1.727,.005,.212,.178,.238);
-    vestir(ombros,braco,1.55,.026,.146,.25,.154).rotation.z=lado*.105;
-    vestir(punho,pulso,1.257,.016,.139,.236,.147);
-    vestir(punho,pulso,1.123,.020,.119,.065,.132);
-    vestir(mao,pulso,1.046,.044,.122,.139,.091);
+    const coxa=lado*.127, canela=lado*.147;
+    base(elipse,junta,coxa,.966,0,.088,.084,.092);
+    base(membro,perola,coxa,.783,-.005,.101,.207,.111).rotation.z=lado*.07;
+    base(elipse,junta,canela,.56,.006,.076,.076,.077);
+    base(placa,titanio,canela,.569,.039,.071,.078,.053);
+    base(membro,perola,canela,.34,-.021,.078,.193,.09);
+    base(elipse,junta,canela,.135,-.012,.055,.065,.058);
+    base(capacete,titanio,canela,.066,.051,.091,.063,.169);
+    const braco=lado*.332, cotovelo=lado*.372, pulso=lado*.392;
+    base(elipse,junta,braco,1.704,-.008,.108,.101,.11);
+    base(elipse,perola,braco+lado*.015,1.732,0,.103,.108,.117);
+    encaixe(ombro,elipse,braco+lado*.102,1.746,0,.023,.053,.055);
+    base(membro,perola,braco+lado*.021,1.531,-.014,.071,.145,.078).rotation.z=lado*.12;
+    base(elipse,junta,cotovelo,1.377,-.012,.059,.059,.062);
+    base(membro,titanio,pulso,1.235,.007,.061,.127,.072);
+    base(placa,perola,pulso,1.248,.018,.064,.133,.067).rotation.y=lado*.55;
+    base(elipse,junta,pulso,1.096,.016,.044,.048,.046);
+    if(lado===-1)encaixe(punho,membro,pulso,1.105,.017,.055,.036,.055);
+    base(elipse,junta,pulso,1.024,.022,.056,.08,.038);
+    if(lado===-1)encaixe(mao,elipse,pulso,1.027,.037,.058,.068,.033);
     for(let i=0;i<4;i++){
-      const dx=(i-1.5)*.026;
-      estrutura(cubo,eixo,pulso+dx,.943,.036,.017,.084-Math.abs(dx)*.44,.029);
+      const x=pulso+(i-1.5)*.026, y=.954+Math.abs(i-1.65)*.008;
+      base(falange,titanio,x,y,.027,.011,.019,.012);
+      base(falange,junta,x,y-.048,.035,.01,.015,.011).rotation.x=-.36;
     }
-    estrutura(placa,grafite,pulso-lado*.062,1,.047,.033,.086,.046).rotation.z=-lado*.36;
+    base(falange,titanio,pulso-lado*.054,.997,.045,.014,.025,.013).rotation.z=-lado*.44;
   }
   return {
     atualizar(ids,completo,animar){
@@ -88,7 +105,9 @@ export function criarRobo(cena) {
       this.quadro(0);
     },
     quadro(dt){
+      let emMovimento=false;
       for(const g of pecas.values()){
+        if(g.userData.tempo>0)emMovimento=true;
         const t=Math.max(0,(g.userData.tempo||0)-dt);
         g.userData.tempo=t;
         const sinal=['memoria','diario'].includes(g.name)?-1:1;
@@ -96,6 +115,7 @@ export function criarRobo(cena) {
         g.userData.metal.emissive.setHex(0xffc277);
         g.userData.metal.emissiveIntensity=t*.98;
       }
+      return emMovimento;
     }
   };
 }

@@ -1,7 +1,7 @@
 # Goal — evento-3d
 
 - **Início:** 2026-11-18 01:03 · **Agente:** `codex exec` com gpt-6.2-astra, esforço medium, orquestrado pelo Claude Code
-- **Tetos:** 45 min e 8 GB por rodada · até 5 rodadas · parar se a cota estimada somar 25%
+- **Tetos:** 45 min e 8 GB por rodada · até 6 rodadas · parar se a cota estimada somar 25%
 
 ## Resultado
 Evento 3D "Imersão Jarvis" rodando localmente, com modo sem 3D e página mostrando todo o processo.
