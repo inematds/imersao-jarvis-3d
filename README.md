@@ -26,6 +26,12 @@ python3 -m http.server 8791
 
 Depois abra `http://localhost:8791/`.
 
+Para abrir em outros aparelhos da rede, use o servidor que entrega só os arquivos públicos:
+
+```bash
+python3 tools/servir.py <ip-da-maquina> 8791
+```
+
 ## Custo
 
 `tools/resumir_rodada.py` grava tempo, tokens e custo equivalente de cada rodada em `processo/dados.json`. O uso real é pela assinatura do Codex, sem chave de API.
