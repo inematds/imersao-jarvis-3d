@@ -1,5 +1,7 @@
-| Data | O que quebrou | Menor correção | Prompt ou infra |
+# Falhas
+
+| data | o que quebrou | menor correção | prompt \| infra |
 |---|---|---|---|
-| 2026-11-18 | A armadura já aparecia no início, o botão subia e os telões e a entrada ficavam cortados. | Agrupar as placas por peça, reinserir o conteúdo antes do rodapé e ajustar câmera, título e espaçamento do cartão. | prompt |
-| 2026-11-18 | A revisão R3 encontrou robô em blocos, sombras ausentes, telão cortado, ação fora da dobra e caminhada de 0,2 m. | Usar perfis curvos, mapa de sombras, projeção pela área livre, rodapé fixo e subpassos de física com espaço atrás na entrada. | prompt |
-| 2026-11-18 | A revisão em navegador da rodada 2 reprovou a imersão, o robô, os telões, a sessão, o foco, as fontes, a retomada e a ação sem 3D. | Ajustar a cena e os dois fluxos existentes conforme a revisão e testar a projeção inicial e a sequência de encaixes. | prompt |
+| 2026-11-18 | Robô apareceu completo com 0 de 6 etapas após o acabamento | mandar manter as placas nas 8 peças e conferir captura com 0 etapas | prompt |
+| 2026-11-18 | Cota medida vinha vazia porque o script lia `~/.codex` e a conta ativa fica em `CODEX_HOME` | ler `CODEX_HOME` antes do caminho padrão | infra |
+| 2026-11-18 | Validador recusou links internos relativos da fonte | aceitar o link interno só no endereço completo | prompt |

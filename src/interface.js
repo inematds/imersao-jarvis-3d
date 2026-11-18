@@ -68,6 +68,7 @@ function iniciar(dados) {
   function abrir(tipo,contexto,titulo){
     if(!painelAtual)origem=document.activeElement;
     painelAtual=tipo;
+    el('linkProcesso').hidden=tipo!=='agenda' && tipo!=='fecho';
     el('acoesPalco').replaceChildren();
     corpo.scrollTop=0;
     el('contexto').textContent=contexto;
