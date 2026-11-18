@@ -1,40 +1,43 @@
 import {Vector2,Vector3,Raycaster} from '../vendor/three/three.module.js';
 
-export function controles(camera,canvas,piso,alvos,visitar,toque) {
-  const teclas=new Set(), toqueAtivo=new Set();
+export function controles(camera,canvas,piso,alvos,visitar,toque,movimento) {
+  const teclas=new Set();
   const mapa={w:'frente',arrowup:'frente',s:'tras',arrowdown:'tras',a:'esquerda',arrowleft:'esquerda',d:'direita',arrowright:'direita'};
   const raio=new Raycaster(), ponteiro=new Vector2();
   let toqueInicial=null, arrastou=false, rota=[], aoChegar=null;
-  let vx=0,vz=0;
+  let vx=0,vz=0,joyX=0,joyZ=0;
+  let moveu=false;
+  function mover(){if(!moveu){movimento();moveu=true;}}
   const limite=9.1, obstaculo=1.38;
   canvas.tabIndex=0;
   canvas.setAttribute('aria-label','Hangar 3D. Use WASD ou as setas para caminhar.');
   camera.rotation.order='YXZ';
-  function parar() { teclas.clear(); toqueAtivo.clear(); rota=[]; aoChegar=null; vx=vz=0; }
+  function parar() { teclas.clear(); soltar(); rota=[]; aoChegar=null; vx=vz=0; }
   canvas.onkeydown=e=>{
     const dir=mapa[e.key.toLowerCase()];
     if (dir) { e.preventDefault(); teclas.add(e.key.toLowerCase()); rota=[]; }
   };
   canvas.onkeyup=e=>teclas.delete(e.key.toLowerCase());
   canvas.onblur=()=>teclas.clear();
-  for(const [dir,simbolo,nome] of [['esquerda','←','esquerda'],['frente','↑','frente'],['tras','↓','trás'],['direita','→','direita']]){
-    const btn=document.createElement('button');
-    btn.textContent=simbolo; btn.setAttribute('aria-label','Andar para '+nome); toque.append(btn);
-    btn.onpointerdown=e=>{btn.setPointerCapture(e.pointerId); toqueAtivo.add(dir); rota=[];};
-    btn.onlostpointercapture=()=>toqueAtivo.delete(dir);
-    btn.onclick=e=>{if(e.detail===0) passo(dir);};
+  const manopla=document.createElement('span');toque.replaceChildren(manopla);
+  function soltar(){joyX=joyZ=0;manopla.style.transform='';}
+  function joystick(e){
+    const r=toque.getBoundingClientRect(), alcance=r.width*.32;
+    const x=(e.clientX-r.left-r.width/2)/alcance,z=(e.clientY-r.top-r.height/2)/alcance;
+    const escala=Math.max(1,Math.hypot(x,z));
+    joyX=x/escala;joyZ=z/escala;
+    manopla.style.transform='translate('+joyX*alcance+'px,'+joyZ*alcance+'px)';
+    rota=[];
   }
+  toque.onpointerdown=e=>{toque.setPointerCapture(e.pointerId);joystick(e);};
+  toque.onpointermove=e=>{if(toque.hasPointerCapture(e.pointerId))joystick(e);};
+  toque.onlostpointercapture=soltar;
   function limitar(p) {
     const r=Math.hypot(p.x,p.z);
     if(r===0){p.z=obstaculo;return p;}
     const fator=Math.min(limite,Math.max(obstaculo,r))/r;
     p.x*=fator; p.z*=fator;
     return p;
-  }
-  function passo(dir) {
-    const v=new Vector3(Number(dir==='direita')-Number(dir==='esquerda'),0,Number(dir==='tras')-Number(dir==='frente'));
-    v.applyAxisAngle(new Vector3(0,1,0),camera.rotation.y);
-    limitar(camera.position.addScaledVector(v,.3));
   }
   function ir(p,fim) {
     parar();
@@ -63,6 +66,7 @@ export function controles(camera,canvas,piso,alvos,visitar,toque) {
     if(!p || p.id!==e.pointerId)return;
     if(Math.hypot(e.clientX-p.x,e.clientY-p.y)>4)arrastou=true;
     if(arrastou){
+      mover();
       camera.rotation.y-=(e.clientX-p.px)*.004;
       camera.rotation.x=Math.max(-1.12,Math.min(1.12,camera.rotation.x-(e.clientY-p.py)*.004));
     }
@@ -82,15 +86,17 @@ export function controles(camera,canvas,piso,alvos,visitar,toque) {
   canvas.onlostpointercapture=()=>{toqueInicial=null;};
   function quadro(dt) {
     if(rota.length){
+      mover();
       const p=rota[0],dx=p.x-camera.position.x,dz=p.z-camera.position.z;
       const dist=Math.hypot(dx,dz), passo=Math.min(dist,2.65*dt);
       camera.position.x+=dx/(dist||1)*passo; camera.position.z+=dz/(dist||1)*passo;
       if(dist<=passo+.001){rota.shift(); if(!rota.length)aoChegar?.();}
       return;
     }
-    const dirs=new Set([...toqueAtivo,...[...teclas].map(k=>mapa[k])]);
-    const x=Number(dirs.has('direita'))-Number(dirs.has('esquerda')),z=Number(dirs.has('tras'))-Number(dirs.has('frente'));
-    const yaw=camera.rotation.y,k=2.2/(Math.hypot(x,z)||1), blend=1-Math.exp(-12*dt);
+    const dirs=new Set([...teclas].map(k=>mapa[k]));
+    const x=joyX+Number(dirs.has('direita'))-Number(dirs.has('esquerda')),z=joyZ+Number(dirs.has('tras'))-Number(dirs.has('frente'));
+    if(x||z)mover();
+    const yaw=camera.rotation.y,k=2.2/Math.max(1,Math.hypot(x,z)), blend=1-Math.exp(-12*dt);
     vx+=((x*Math.cos(yaw)+z*Math.sin(yaw))*k-vx)*blend;
     vz+=((z*Math.cos(yaw)-x*Math.sin(yaw))*k-vz)*blend;
     camera.position.x+=vx*dt; camera.position.z+=vz*dt; limitar(camera.position);

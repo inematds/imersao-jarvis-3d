@@ -48,13 +48,39 @@
       "arquivos": [],
       "prompt": "rodadas/02-mundo/prompt.md",
       "resposta": "rodadas/02-mundo/resposta.md"
+    },
+    {
+      "rodada": "03-correcoes",
+      "modelo": "gpt-6.2-astra",
+      "esforco": "medium",
+      "inicio": "2026-11-18T01:15:26-03:00",
+      "segundos": 381,
+      "codigo_saida": 0,
+      "tokens": {
+        "entrada": 1021112,
+        "cache": 963456,
+        "saida": 12828
+      },
+      "custo_equivalente_usd": 1.36,
+      "cota_estimada_pct": 0.6,
+      "cota_medida_pct": {
+        "inicio": 87.0,
+        "fim": 87.0
+      },
+      "itens": {
+        "agent_message": 3,
+        "command_execution": 20
+      },
+      "arquivos": [],
+      "prompt": "rodadas/03-correcoes/prompt.md",
+      "resposta": "rodadas/03-correcoes/resposta.md"
     }
   ],
   "total": {
-    "segundos": 469,
-    "custo_equivalente_usd": 1.71,
-    "cota_estimada_pct": 0.7,
-    "tokens_entrada": 985138,
-    "tokens_saida": 15993
+    "segundos": 850,
+    "custo_equivalente_usd": 3.07,
+    "cota_estimada_pct": 1.3,
+    "tokens_entrada": 2006250,
+    "tokens_saida": 28821
   }
 }

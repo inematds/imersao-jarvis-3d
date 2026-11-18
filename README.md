@@ -13,8 +13,9 @@ Você entra em um hangar, passa por 6 palcos e monta o seu Jarvis peça por peç
 | 5 | Construir o hangar 3D e o modo sem 3D | `tools/rodar_codex.sh processo/prompts/02-mundo.md` | 🤖 Codex Astra médio |
 | 6 | Testar no navegador e listar correções | navegador + `processo/revisoes/` | 🧠 sessão com o Nei |
 | 7 | Aplicar as correções | `tools/rodar_codex.sh processo/prompts/03-correcoes.md` | 🤖 Codex Astra médio |
-| 8 | Criar a página "Como foi feito" | `tools/rodar_codex.sh processo/prompts/04-processo.md` | 🤖 Codex Astra médio |
-| 9 | Conferência final e aprovação do Nei | `python3 -m http.server 8791` | 🧠 sessão com o Nei |
+| 8 | Dar acabamento ao robô, à luz e aos palcos | `tools/rodar_codex.sh processo/prompts/04-acabamento.md` | 🤖 Codex Astra médio |
+| 9 | Criar a página "Como foi feito" | `tools/rodar_codex.sh processo/prompts/05-processo.md` | 🤖 Codex Astra médio |
+| 10 | Conferência final e aprovação do Nei | `python3 -m http.server 8791` | 🧠 sessão com o Nei |
 
 ## Como abrir
 

@@ -9,6 +9,10 @@ function iniciar(dados) {
   const {palcos,pecas,apresentador,fecho}=dados;
   const salvo=progresso(palcos), painel=el('painel'), corpo=el('sessao');
   let modo='entrada', palcoAtual=null, mundo=null, carregando=false;
+  let painelAtual=null, rodada=0, origem=null;
+  const conteiner=corpo.parentElement;
+  const continuar=()=>salvo.feitas.length>0;
+  const proxima=()=>palcos.find(p=>!salvo.feitas.includes(p.numero));
   const numero=n=>String(n).padStart(2,'0');
   const obter=n=>palcos.find(p=>p.numero===n);
   const visiveis=()=>salvo.feitas.flatMap(n=>obter(n).pecas);
@@ -27,44 +31,87 @@ function iniciar(dados) {
   for(const porta of dados.portas){
     el('portas').append(criar('h3',porta.titulo),criar('p',porta.para_quem),link(porta.curso,porta.url));
   }
-  function agenda(animar=false){
-    const feitas=salvo.feitas;
-    el('contagem').textContent=feitas.length+' de '+palcos.length+' etapas feitas';
-    el('rever').hidden=!completo();
-    el('agenda').replaceChildren(...palcos.map(p=>{
-      const feita=feitas.includes(p.numero);
-      const card=document.createElement('article'),cab=criar('div','','etapa');
-      cab.append(criar('span','Palco '+numero(p.numero),'numero'),criar('span',feita?'Feita':'A fazer',feita?'feita':''));
-      const ir=botao('Ir até lá',()=>irPara(p.numero));
-      ir.setAttribute('aria-label','Ir até lá — '+p.titulo);
-      card.append(cab,criar('h3',p.titulo),ir);return card;
-    }));
-    mundo?.atualizar(visiveis(),completo(),animar);
+  function cartao(p){
+    const feita=salvo.feitas.includes(p.numero);
+    const card=criar('article',''), cab=criar('div','','etapa');
+    cab.append(criar('span','Palco '+numero(p.numero),'numero'),criar('span',feita?'Feita':'A fazer',feita?'feita':''));
+    const acao=modo==='3d'?'Ir até lá':'Abrir etapa';
+    const ir=botao(acao,()=>irPara(p.numero));
+    ir.setAttribute('aria-label',acao+' — '+p.titulo);
+    card.dataset.numero=p.numero;
+    card.append(cab,criar('h3',p.titulo),ir);
+    return card;
   }
-  function abrir(contexto,titulo){
+  function agenda(){
+    const total=salvo.feitas.length+' de '+palcos.length+' etapas';
+    el('contagem').textContent=total+' feitas';
+    el('placar').textContent=total;
+    el('rever').hidden=!completo();
+    el('proximo').textContent=completo()?'Rever o fecho':'Ir ao próximo palco';
+    el('agenda').replaceChildren(...palcos.map(cartao));
+    el('pecas').replaceChildren(...pecas.map(p=>criar('li',p.parte_robo+' · '+(visiveis().includes(p.id)?'encaixada':'falta'))));
+    const principal=el('acesso').querySelector('[value="3d"]');
+    principal.textContent=continuar()?'Continuar: '+total:'Entrar no hangar';
+    el('acesso').classList.toggle('retomar',continuar());
+    el('reiniciar').hidden=!continuar();
+  }
+  function fechar(){
+    if(!painelAtual)return;
+    const foco=origem;
+    painelAtual=null;palcoAtual=null;
+    if(painel.open)painel.close();
+    conteiner.append(corpo);corpo.replaceChildren();
+    if(modo==='3d')mundo?.focar();
+    else if(foco?.isConnected)foco.focus();
+  }
+  function abrir(tipo,contexto,titulo){
+    if(!painelAtual)origem=document.activeElement;
+    painelAtual=tipo;
     el('contexto').textContent=contexto;
     const h=criar('h2',titulo);h.id='tituloPainel';h.tabIndex=-1;corpo.replaceChildren(h);
-    if(!painel.open)painel.showModal();
-    painel.scrollTop=0;h.focus();
+    if(tipo==='sessao' && modo==='sem-3d'){
+      el('agenda').querySelector('[data-numero="'+palcoAtual+'"]').append(corpo);
+    }else{
+      conteiner.append(corpo);
+      if(!painel.open)painel.showModal();
+      painel.scrollTop=0;
+    }
+    h.focus();
   }
   function secao(titulo,texto){corpo.append(criar('h3',titulo),criar('p',texto));}
   function mostrarFecho(){
+    if(modo==='3d')mundo.enquadrarVisor();
     palcoAtual=null;
-    abrir('Jarvis ligado','Seu assistente está montado');
+    abrir('fecho','Jarvis ligado','Seu assistente está montado');
     corpo.append(criar('p',apresentador.encerramento),criar('h3',fecho.pergunta),link(fecho.cta,'https://inema.club'));
     corpo.append(criar('h3','Para ir além'));
     for(const item of dados.alem)corpo.append(link(item.titulo,item.url),criar('p',item.descricao));
   }
-  function marcar(n){
-    if(!obter(n)||salvo.feitas.includes(n))return;
-    if(modo==='3d')mundo.verRobo();
-    salvo.marcar(n);agenda(true);
+  async function marcar(n){
+    const p=obter(n);
+    if(!p||salvo.feitas.includes(n))return;
+    const atual=++rodada;
+    fechar();salvo.marcar(n);agenda();
+    if(modo==='3d'){
+      el('legenda').hidden=true;
+      el('encaixe').textContent='';
+      el('proximo').disabled=true;
+      await mundo.verRobo(p.pecas);
+      if(atual!==rodada)return;
+      mundo.atualizar(visiveis(),false,true);
+      const nomes=p.pecas.map(id=>pecas.find(item=>item.id===id).parte_robo);
+      el('encaixe').textContent=nomes.map(nome=>'Peça encaixada: '+nome).join(' · ');
+      await new Promise(resolve=>setTimeout(resolve,700));
+      if(atual!==rodada)return;
+      el('proximo').disabled=false;
+    }
+    mundo?.atualizar(visiveis(),completo(),false);
     if(completo())mostrarFecho();
-    else if(palcoAtual===n)sessao(n);
+    else if(modo==='sem-3d')el('agenda').children[proxima().numero-1].querySelector('button').focus();
   }
   function sessao(n){
     const p=obter(n);palcoAtual=n;
-    abrir('Palco '+numero(n)+' / '+numero(palcos.length),p.titulo);
+    abrir('sessao','Palco '+numero(n)+' / '+numero(palcos.length),p.titulo);
     corpo.append(criar('p',p.fala));
     secao('O que você ganha',p.ganho);
     corpo.append(criar('h3','Material'));
@@ -88,18 +135,34 @@ function iniciar(dados) {
   }
   function irPara(n){
     if(!obter(n))return;
+    interromper();
+    el('encaixe').textContent='';
     if(modo==='entrada')exibir(false);
-    if(modo==='3d')mundo.posicionar(n);
+    if(modo==='3d'){el('dica').hidden=true;el('legenda').hidden=true;mundo.posicionar(n);}
     sessao(n);
   }
+  function interromper(){
+    rodada++;el('proximo').disabled=false;
+    mundo?.cancelarGiro();
+    mundo?.atualizar(visiveis(),completo(),false);
+  }
   function exibir(tres){
+    fechar();interromper();
+    document.body.classList.toggle('imersivo',tres);
+    el('programacao').hidden=tres;
+    el('menu').hidden=el('placar').hidden=!tres;
+    el('legenda').hidden=!tres||salvo.aberturaVista||continuar();
+    if(tres && !salvo.aberturaVista)salvo.apresentar();
     modo=tres?'3d':'sem-3d';
     el('entrada').hidden=true; el('evento').hidden=false; el('hangar').hidden=!tres;
     el('cracha').hidden=false; el('cracha').textContent=salvo.nome||'Visitante';
     el('tituloModo').textContent=tres?'Hangar de montagem':'Programação sem 3D';
     el('trocar').textContent=tres?'Assistir sem 3D':'Entrar no hangar';
     el('fala').textContent=apresentador.nome+' · '+apresentador.abertura;
-    mundo?.mostrar(tres);agenda();el('tituloModo').focus();
+    el('abertura').textContent=el('fala').textContent;
+    if(tres && matchMedia('(pointer: coarse)').matches)el('dica').textContent='Use o joystick para andar. Arraste à direita para olhar.';
+    mundo?.mostrar(tres);agenda();
+    if(tres)mundo.focar();else el('tituloModo').focus();
   }
   function falhou(avisar=true){
     mundo=null;el('toque').replaceChildren();el('cena').replaceChildren();
@@ -115,7 +178,8 @@ function iniciar(dados) {
     carregando=true;
     try{
       const {criarMundo}=await import('./mundo.js');
-      mundo=criarMundo(el('cena'),palcos,sessao,el('toque'),falhou);
+      await Promise.all(['700 96px Sora','400 16px Inter'].map(font=>document.fonts.load(font).catch(()=>[])));
+      mundo=criarMundo(el('cena'),palcos,irPara,el('toque'),falhou,()=>{el('dica').hidden=true;});
       exibir(true);
     }catch{falhou();}
     finally{carregando=false;}
@@ -128,19 +192,33 @@ function iniciar(dados) {
   for(const b of el('acesso').querySelectorAll('button'))b.disabled=false;
   el('trocar').onclick=()=>entrar(modo!=='3d');
   el('rever').onclick=mostrarFecho;
-  el('fechar').onclick=()=>painel.close();
-  painel.onclose=()=>{
-    if(painel.open)return;
-    corpo.replaceChildren();
-    const ultimo=palcoAtual;palcoAtual=null;
-    const destino=ultimo?el('agenda').children[ultimo-1]?.querySelector('button'):el('rever');
-    if(!el('evento').hidden)(destino&&!destino.hidden?destino:el('agendaTitulo')).focus();
+  function limpar(){
+    fechar();salvo.limpar();interromper();el('nome').value='';
+    el('cracha').textContent='Visitante';el('encaixe').textContent='';
+    el('dica').hidden=false;agenda();
+    el('confirmacao').hidden=true;
+  }
+  el('reiniciar').onclick=()=>{el('confirmacao').hidden=false;el('cancelar').focus();};
+  el('cancelar').onclick=()=>{el('confirmacao').hidden=true;el('reiniciar').focus();};
+  el('zerar').onclick=()=>{limpar();el('nome').focus();};
+  el('fechar').onclick=fechar;
+  painel.oncancel=e=>{e.preventDefault();fechar();};
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && !painel.open && painelAtual)fechar();
+  });
+  el('dispensar').onclick=()=>{el('legenda').hidden=true;mundo.focar();};
+  el('proximo').onclick=()=>proxima()?irPara(proxima().numero):mostrarFecho();
+  el('menu').onclick=()=>{
+    interromper();
+    abrir('agenda','Hangar de montagem','Agenda');
+    corpo.append(...palcos.map(cartao));
+    if(completo())corpo.append(botao('Rever o fecho',mostrarFecho));
+    corpo.append(botao('Assistir sem 3D',()=>entrar(false)));
   };
+  agenda();
   window.__evento={
-    estado:()=>({modo,palcoAtual,feitas:salvo.feitas,pecasVisiveis:visiveis(),webgl:!!mundo}),
-    irPara,marcar,limpar(){
-      salvo.limpar();el('nome').value='';el('cracha').textContent='Visitante';palcoAtual=null;
-      if(painel.open)painel.close();agenda();
-    }
+    estado:()=>({modo,palcoAtual,feitas:salvo.feitas,pecasVisiveis:visiveis(),webgl:!!mundo,
+      ...(mundo?.estado()||{posicao:{x:0,z:0},direcao:0}),painel:painelAtual,continuar:continuar()}),
+    irPara,marcar,limpar
   };
 }
