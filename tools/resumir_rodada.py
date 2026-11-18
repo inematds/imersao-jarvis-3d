@@ -22,7 +22,8 @@ def ler_json(linha):
 def cota(thread):
     if not thread:
         return None
-    achados = glob.glob(os.path.expanduser(f"~/.codex/sessions/**/*{thread}*.jsonl"), recursive=True)
+    base = os.environ.get("CODEX_HOME") or os.path.expanduser("~/.codex")
+    achados = glob.glob(f"{base}/sessions/**/*{thread}*.jsonl", recursive=True)
     valores = []
     for arq in achados:
         for linha in open(arq, errors="ignore"):

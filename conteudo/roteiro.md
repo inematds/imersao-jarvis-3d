@@ -64,7 +64,7 @@ Abra o painel do guia e consulte os robôs, os temporizadores, as filas e as pen
 
 **Pronto quando** — Você vê esses dados numa só tela e recebe o bom dia em português. O painel só lê a máquina.
 
-Origem: linha 5 da tabela “As 6 etapas” (ganho e material). “Vídeos”, cartão “O painel do seu Jarvis”. O visor representa a conferência no robô. Os testes vêm de “As peças”, cartão “Como ele se confere”. O painel só lê os dados.
+Origem: linha 5 da tabela “As 6 etapas” (ganho e material). “Vídeos”, cartão “O painel do seu Jarvis”. O sensor no ombro representa a conferência no robô. Os testes vêm de “As peças”, cartão “Como ele se confere”. O painel só lê os dados.
 
 ## 6. Faça ele melhorar toda semana
 
@@ -82,7 +82,7 @@ Origem: linha 6 da tabela “As 6 etapas” (ganho e material). “As peças”,
 
 Com as seis etapas feitas, o robô liga.
 
-> Eu encerro o Criando seu Jarvis com uma pergunta para você. O que você gostaria que o seu Jarvis lembrasse para você não ter de explicar tudo de novo amanhã?
+> Você montou um assistente que lembra de você e pede seu OK quando há risco. Vamos escolher a primeira coisa que ele vai guardar. O que você gostaria que o seu Jarvis lembrasse para você não ter de explicar tudo de novo amanhã?
 
 > Os cursos e guias estão grátis no inema.club, direto na internet.
 

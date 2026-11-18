@@ -13,7 +13,7 @@
     "nome": "Nei Maldaner",
     "video": null,
     "abertura": "Você vai montar um assistente que lembra de você e pede seu OK antes de agir quando há risco. Eu sou o Nei. Entre comigo no hangar do Criando seu Jarvis.",
-    "encerramento": "Eu encerro o Criando seu Jarvis com uma pergunta para você."
+    "encerramento": "Você montou um assistente que lembra de você e pede seu OK quando há risco. Vamos escolher a primeira coisa que ele vai guardar."
   },
   "pecas": [
     {
@@ -56,7 +56,7 @@
       "id": "testes",
       "nome": "Como ele se confere",
       "descricao": "O agente testa o que fez antes de dizer que terminou.",
-      "parte_robo": "Visor preto na frente da cabeça"
+      "parte_robo": "Sensor de conferência no ombro"
     },
     {
       "id": "diario",
@@ -195,7 +195,7 @@
           "tipo": "guia",
           "titulo": "Guia do jarvis-local",
           "url": "https://inematds.github.io/jarvis-local/guia/",
-          "detalhe": "Confira no guia os requisitos da placa de vídeo."
+          "detalhe": "Esta etapa pede um computador com placa de vídeo. Confira os requisitos no guia."
         }
       ],
       "video": null,
@@ -216,7 +216,7 @@
           "tipo": "guia",
           "titulo": "Guia do jarvis-painel",
           "url": "https://inematds.github.io/jarvis-painel/guia/",
-          "detalhe": "Confira no guia os requisitos para rodar o painel localmente."
+          "detalhe": "Esta etapa pede um computador com placa de vídeo. Confira os requisitos no guia."
         }
       ],
       "video": {
@@ -275,17 +275,17 @@
     {
       "titulo": "JARVIS",
       "descricao": "Compare sistemas Jarvis abertos e escolha o que adaptar ao seu.",
-      "url": "/jarvis/"
+      "url": "https://eventos.inema.pro/jarvis/"
     },
     {
       "titulo": "Do chat ao agente",
       "descricao": "Siga do terminal ao Telegram. Depois, use filas de tarefas e automatize as redes.",
-      "url": "/do-chat-ao-agente/"
+      "url": "https://eventos.inema.pro/do-chat-ao-agente/"
     },
     {
       "titulo": "Imersão Do chat ao agente",
       "descricao": "Monte seu assistente com a turma no Refúgio INEMA.",
-      "url": "/imersao-do-chat-ao-agente/"
+      "url": "https://eventos.inema.pro/imersao-do-chat-ao-agente/"
     }
   ],
   "fecho": {

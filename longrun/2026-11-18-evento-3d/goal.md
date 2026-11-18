@@ -10,7 +10,7 @@ Evento 3D "Imersão Jarvis" rodando localmente, com modo sem 3D e página mostra
 
 **Função**
 - [ ] `python3 tools/validar_conteudo.py` → `OK: 6 palcos, 8 peças`
-- [ ] Navegador real em `http://localhost:8765/` → entra no hangar com WebGL, sem erro no console
+- [ ] Navegador real em `http://localhost:8791/` → entra no hangar com WebGL, sem erro no console
 - [ ] Navegador: marcar os 6 palcos como feitos → 8 peças no robô e fecho visível
 - [ ] Navegador em 360 px, modo sem 3D → 6 etapas e `scrollWidth` igual à largura da tela
 - [ ] `processo/index.html` no navegador → todas as rodadas de `processo/dados.json`, com prompt, tempo, tokens e custo

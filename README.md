@@ -14,15 +14,15 @@ Você entra em um hangar, passa por 6 palcos e monta o seu Jarvis peça por peç
 | 6 | Testar no navegador e listar correções | navegador + `processo/revisoes/` | 🧠 sessão com o Nei |
 | 7 | Aplicar as correções | `tools/rodar_codex.sh processo/prompts/03-correcoes.md` | 🤖 Codex Astra médio |
 | 8 | Criar a página "Como foi feito" | `tools/rodar_codex.sh processo/prompts/04-processo.md` | 🤖 Codex Astra médio |
-| 9 | Conferência final e aprovação do Nei | `python3 -m http.server 8765` | 🧠 sessão com o Nei |
+| 9 | Conferência final e aprovação do Nei | `python3 -m http.server 8791` | 🧠 sessão com o Nei |
 
 ## Como abrir
 
 ```bash
-python3 -m http.server 8765
+python3 -m http.server 8791
 ```
 
-Depois abra `http://localhost:8765/`.
+Depois abra `http://localhost:8791/`.
 
 ## Custo
 
