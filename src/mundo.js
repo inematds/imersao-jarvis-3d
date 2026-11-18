@@ -43,7 +43,7 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
   cena.background=new T.Color(0x101117);
   cena.fog=new T.FogExp2(0x15151a,.025);
   const camera=new T.PerspectiveCamera(70,1,.06,75);
-  camera.position.set(0,2.48,4); camera.lookAt(0,1.55,0);
+  camera.position.set(0,2.48,4.2); camera.lookAt(0,2.04,0);
   const concreto=new T.MeshStandardMaterial({color:0x303239,roughness:.36,metalness:.24});
   const aco=new T.MeshStandardMaterial({color:0x31343a,metalness:.42,roughness:.52});
   const faixa=new T.MeshBasicMaterial({color:0xf8a33e,toneMapped:false});
@@ -71,7 +71,7 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
       bloco(cena,aco,lado*14.8,6.65,z,.25,3.5,.34).rotation.z=-lado*.75;
     }
   }
-  cena.add(new T.HemisphereLight(0xe5ebfb,0x53525b,.88));
+  cena.add(new T.HemisphereLight(0xe5ebfb,0x5d5958,1.06));
   const sol=new T.DirectionalLight(0xfff2df,2.25);
   sol.position.set(-7,12,6);
   sol.castShadow=true;
@@ -198,7 +198,7 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
   function enquadrarVisor(){
     controle.parar();camera.position.set(.72,1.67,3.05);camera.lookAt(0,1.4,0);
   }
-  return {mostrar,posicionar,verRobo,cancelarGiro,enquadrarVisor,
+  return {pecasVisiveis:robo.pecasVisiveis,mostrar,posicionar,verRobo,cancelarGiro,enquadrarVisor,
     focar:()=>{emSessao=false;render.domElement.focus({preventScroll:true});},
     estado:()=>({posicao:{x:camera.position.x,z:camera.position.z},direcao:camera.rotation.y}),
     atualizar(ids,completo,animar){

@@ -61,7 +61,7 @@ function iniciar(dados) {
     painelAtual=null;palcoAtual=null;
     el('acoesPalco').replaceChildren();
     if(painel.open)painel.close();
-    conteiner.append(corpo);corpo.replaceChildren();
+    conteiner.insertBefore(corpo,el('acoesPalco'));corpo.replaceChildren();
     if(modo==='3d')mundo?.focar();
     else if(foco?.isConnected)foco.focus();
   }
@@ -75,7 +75,7 @@ function iniciar(dados) {
     if(tipo==='sessao' && modo==='sem-3d'){
       el('agenda').querySelector('[data-numero="'+palcoAtual+'"]').append(corpo);
     }else{
-      conteiner.append(corpo);
+      conteiner.insertBefore(corpo,el('acoesPalco'));
       if(!painel.open)painel.showModal();
       painel.scrollTop=0;
     }
@@ -220,7 +220,7 @@ function iniciar(dados) {
   };
   agenda();
   window.__evento={
-    estado:()=>({modo,palcoAtual,feitas:salvo.feitas,pecasVisiveis:visiveis(),webgl:!!mundo,
+    estado:()=>({modo,palcoAtual,feitas:salvo.feitas,pecasVisiveis:modo==='3d'?mundo.pecasVisiveis():visiveis(),webgl:!!mundo,
       ...(mundo?.estado()||{posicao:{x:0,z:0},direcao:0}),painel:painelAtual,continuar:continuar()}),
     irPara,marcar,limpar
   };
