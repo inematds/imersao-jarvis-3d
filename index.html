@@ -35,7 +35,10 @@
 <p id="dica">WASD ou setas para andar. Arraste para olhar.</p><div id="encaixe" role="status"></div>
 <button id="proximo">Ir ao próximo palco</button></div></div>
 </section>
-<dialog id="painel" aria-labelledby="tituloPainel"><div class="cab"><p class="rotulo" id="contexto"></p><button id="fechar" aria-label="Fechar painel">Fechar</button></div><div id="sessao"></div><footer id="acoesPalco"></footer><small id="linkProcesso" hidden><a href="processo/">Como foi feito</a></small></dialog>
+<dialog id="painel" aria-labelledby="tituloPainel"><section id="videoTelao" aria-label="Telão do palco" hidden>
+<div id="capaTelao"><span id="numeroTelao" class="numero"></span><strong id="tituloTelao"></strong><button id="assistirTelao">Assistir no telão</button><span id="materialTelao"></span></div>
+<button id="pararVideo" hidden>Parar vídeo</button></section>
+<div class="cab"><p class="rotulo" id="contexto"></p><button id="agendaSessao">Agenda</button><button id="recolher" aria-expanded="true" aria-controls="sessao acoesPalco">Recolher</button><button id="fechar" aria-label="Fechar painel">Fechar</button></div><div id="sessao"></div><footer id="acoesPalco"></footer><small id="linkProcesso" hidden><a href="processo/">Como foi feito</a></small></dialog>
 <noscript>Ative o JavaScript para abrir a programação.</noscript>
 </main>
 </body></html>

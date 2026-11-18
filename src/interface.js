@@ -10,7 +10,56 @@ function iniciar(dados) {
   const salvo=progresso(palcos), painel=el('painel'), corpo=el('sessao');
   let modo='entrada', palcoAtual=null, mundo=null, carregando=false;
   let painelAtual=null, rodada=0, origem=null;
-  const conteiner=corpo.parentElement;
+  const conteiner=corpo.parentElement, telao=el('videoTelao');
+  let player=null;
+  function pararVideo(){
+    player?.remove();
+    player=null;
+    el('capaTelao').hidden=false;
+    el('pararVideo').hidden=true;
+  }
+  function sairDaSessao(){
+    pararVideo();
+    telao.hidden=true;
+    mundo?.sairDoPalco();
+    painel.classList.remove('sessao3d','recolhido');
+    el('recolher').textContent='Recolher';
+    el('recolher').setAttribute('aria-expanded','true');
+  }
+  function alinharTelao({x,y,largura,altura}){
+    if(painelAtual!=='sessao')return;
+    Object.assign(telao.style,{left:x+'px',top:y+'px',width:largura+'px',height:altura+'px'});
+    telao.hidden=!obter(palcoAtual).video;
+  }
+  function assistir(video,botaoPainel){
+    if(player)return;
+    player=document.createElement('iframe');
+    player.title=video.titulo;
+    player.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+    player.allowFullscreen=true;
+    player.referrerPolicy='strict-origin-when-cross-origin';
+    player.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(video.youtube_id)+'?autoplay=1&rel=0&playsinline=1';
+    if(modo==='sem-3d'){botaoPainel.replaceWith(player);return;}
+    player.classList.toggle('vertical',video.url.includes('/shorts/'));
+    telao.prepend(player);
+    el('capaTelao').hidden=true;
+    el('pararVideo').hidden=false;
+    el('pararVideo').focus();
+  }
+  el('pararVideo').onclick=()=>{pararVideo();el('assistirTelao').focus();};
+  el('recolher').onclick=()=>{
+    const recolhido=painel.classList.toggle('recolhido');
+    el('recolher').textContent=recolhido?'Expandir':'Recolher';
+    el('recolher').setAttribute('aria-expanded',String(!recolhido));
+  };
+  function estadoVideo(){
+    const projecao=mundo?.projecaoTelao();
+    if(!projecao)return null;
+    const {x,y,largura,altura}=projecao;
+    const rect=player?.getBoundingClientRect();
+    return {ativo:!!player,youtubeId:obter(palcoAtual).video?.youtube_id??null,telao:{x,y,largura,altura},
+      player:rect?{x:rect.x,y:rect.y,largura:rect.width,altura:rect.height}:{x:0,y:0,largura:0,altura:0}};
+  }
   const continuar=()=>salvo.feitas.length>0;
   const proxima=()=>palcos.find(p=>!salvo.feitas.includes(p.numero));
   const numero=n=>String(n).padStart(2,'0');
@@ -58,6 +107,7 @@ function iniciar(dados) {
   function fechar(){
     if(!painelAtual)return;
     const foco=origem;
+    sairDaSessao();
     painelAtual=null;palcoAtual=null;
     el('acoesPalco').replaceChildren();
     if(painel.open)painel.close();
@@ -77,6 +127,9 @@ function iniciar(dados) {
       el('agenda').querySelector('[data-numero="'+palcoAtual+'"]').append(corpo);
     }else{
       conteiner.insertBefore(corpo,el('acoesPalco'));
+      if(tipo==='sessao' && modo==='3d'){
+        painel.classList.add('sessao3d');
+      }
       if(!painel.open)painel.showModal();
       painel.scrollTop=0;
     }
@@ -84,6 +137,7 @@ function iniciar(dados) {
   }
   function secao(titulo,texto){corpo.append(criar('h3',titulo),criar('p',texto));}
   function mostrarFecho(){
+    sairDaSessao();
     if(modo==='3d')mundo.enquadrarVisor();
     palcoAtual=null;
     abrir('fecho','Jarvis ligado','Seu assistente está montado');
@@ -121,14 +175,16 @@ function iniciar(dados) {
     corpo.append(criar('h3','Material'));
     if(p.video){
       const video=p.video;
-      const assistir=botao('Assistir · '+video.titulo+' ('+video.duracao+')',()=>{
-        const frame=document.createElement('iframe');
-        frame.title=video.titulo;frame.allowFullscreen=true;
-        frame.referrerPolicy='strict-origin-when-cross-origin';
-        frame.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(video.youtube_id);
-        assistir.replaceWith(frame);
-      });
-      corpo.append(assistir);
+      const descricao=video.titulo+' ('+video.duracao+')';
+      const iniciarVideo=()=>assistir(video,botaoPainel);
+      const botaoPainel=botao('Assistir · '+descricao,iniciarVideo);
+      corpo.append(botaoPainel);
+      if(modo==='3d'){
+        el('numeroTelao').textContent='Palco '+numero(n);
+        el('tituloTelao').textContent=p.titulo;
+        el('materialTelao').textContent=descricao;
+        el('assistirTelao').onclick=iniciarVideo;
+      }
     }
     for(const m of p.materiais)corpo.append(link(m.titulo,m.url),criar('p',m.detalhe));
     secao('Sua tarefa',p.tarefa);secao('Pronto quando',p.pronto_quando);
@@ -146,6 +202,7 @@ function iniciar(dados) {
     sessao(n);
   }
   function interromper(){
+    sairDaSessao();
     rodada++;el('proximo').disabled=false;
     mundo?.cancelarGiro();
     mundo?.atualizar(visiveis(),completo(),false);
@@ -183,7 +240,7 @@ function iniciar(dados) {
     try{
       const {criarMundo}=await import('./mundo.js');
       await Promise.all(['700 96px Sora','400 16px Inter'].map(font=>document.fonts.load(font).catch(()=>[])));
-      mundo=criarMundo(el('cena'),palcos,irPara,el('toque'),falhou,()=>{el('dica').hidden=true;});
+      mundo=criarMundo(el('cena'),palcos,irPara,el('toque'),falhou,()=>{el('dica').hidden=true;},alinharTelao);
       exibir(true);
     }catch{falhou();}
     finally{carregando=false;}
@@ -208,20 +265,22 @@ function iniciar(dados) {
   el('fechar').onclick=fechar;
   painel.oncancel=e=>{e.preventDefault();fechar();};
   document.addEventListener('keydown',e=>{
-    if(e.key==='Escape' && !painel.open && painelAtual)fechar();
+    if(e.key==='Escape' && painelAtual){e.preventDefault();fechar();}
   });
   el('dispensar').onclick=()=>{el('legenda').hidden=true;mundo.focar();};
   el('proximo').onclick=()=>proxima()?irPara(proxima().numero):mostrarFecho();
   el('menu').onclick=()=>{
     interromper();
+    palcoAtual=null;
     abrir('agenda','Hangar de montagem','Agenda');
     corpo.append(...palcos.map(cartao));
     if(completo())corpo.append(botao('Rever o fecho',mostrarFecho));
     corpo.append(botao('Assistir sem 3D',()=>entrar(false)));
   };
+  el('agendaSessao').onclick=el('menu').onclick;
   agenda();
   window.__evento={
-    estado:()=>({modo,palcoAtual,feitas:salvo.feitas,pecasVisiveis:modo==='3d'?mundo.pecasVisiveis():visiveis(),webgl:!!mundo,
+    estado:()=>({modo,palcoAtual,videoTelao:estadoVideo(),feitas:salvo.feitas,pecasVisiveis:modo==='3d'?mundo.pecasVisiveis():visiveis(),webgl:!!mundo,
       ...(mundo?.estado()||{posicao:{x:0,z:0},direcao:0}),painel:painelAtual,continuar:continuar()}),
     irPara,marcar,limpar
   };

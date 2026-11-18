@@ -30,7 +30,7 @@ function tela(p) {
   return new T.MeshBasicMaterial({map:textura,toneMapped:false});
 }
 
-export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
+export function criarMundo(container,palcos,abrir,toque,falhou,movimento,aoProjetar) {
   const render=new T.WebGLRenderer({antialias:true,powerPreference:'low-power'});
   render.setPixelRatio(Math.min(devicePixelRatio,2));
   const celular=matchMedia('(max-width: 720px), (pointer: coarse)').matches;
@@ -120,14 +120,26 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
     painel.position.set(0,4.9,-.045);palco.add(painel);
     for (const m of [...objetos,painel]) {m.userData.numero=p.numero;alvos.push(m);}
     for(let i=2;i<=8;i+=1.35)bloco(palco,faixa,0,.009,i,.075,.016,.74);
-    pontos.set(p.numero,{destino:palco.position.clone().multiplyScalar(5.5/10.5),olhar:new T.Vector3(palco.position.x,1.67,palco.position.z)});
+    pontos.set(p.numero,{painel,destino:palco.position.clone().multiplyScalar(5.5/10.5),olhar:new T.Vector3(palco.position.x,1.67,palco.position.z)});
   }
   container.replaceChildren(render.domElement);
   let ativo=false,anterior=0;
   const reduz=matchMedia('(prefers-reduced-motion: reduce)');
-  let emSessao=false;
+  let palcoEnquadrado=null, projecao=null;
+  function projetarTelao(){
+    const tela=pontos.get(palcoEnquadrado).painel;
+    const rect=render.domElement.getBoundingClientRect();
+    const vertices=tela.geometry.attributes.position;
+    const cantos=Array.from({length:4},(_,i)=>{
+      const ponto=new T.Vector3().fromBufferAttribute(vertices,i);
+      tela.localToWorld(ponto).project(camera);
+      return {x:rect.left+(1+ponto.x)*rect.width/2,y:rect.top+(1-ponto.y)*rect.height/2};
+    });
+    const x=Math.min(...cantos.map(p=>p.x)), y=Math.min(...cantos.map(p=>p.y));
+    return {cantos,x,y,largura:Math.max(...cantos.map(p=>p.x))-x,altura:Math.max(...cantos.map(p=>p.y))-y};
+  }
   function posicionar(n){
-    emSessao=true;
+    palcoEnquadrado=n;projecao=null;
     const {destino,olhar}=pontos.get(n);
     cancelarGiro();controle.parar();camera.position.set(destino.x,1.67,destino.z);camera.lookAt(olhar);
   }
@@ -149,20 +161,33 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
       for(let i=0;i<passos;i++)controle.quadro(dt/passos);
     }
     const w=container.clientWidth,h=container.clientHeight;
+    let mudouEnquadramento=false;
     if(painel && w && h){
       const rect=painel.getBoundingClientRect();
-      const livreW=w<=720?w:rect.left, topo=Math.min(76,h*.12);
-      const livreH=(w<=720?rect.top:h)-topo;
+      const folha=rect.left<=1;
+      const livreW=folha?w:rect.left, topo=Math.min(76,Math.max(60,h*.12));
+      const livreH=(folha?rect.top:h)-topo;
       // A lente deslocada mantém paralelas as bordas do telão elevado.
       const px=h/(2*Math.tan(T.MathUtils.degToRad(camera.fov/2))*5.045);
-      const zoom=emSessao?Math.min(livreW*.9/(6.55*px),livreH*.88/(3.38*px)):Math.min(1,livreW/w,livreH/h);
-      camera.zoom=Math.max(.01,zoom);
-      camera.setViewOffset(w,h,(w-livreW)/2,(h-livreH)/2-topo-(emSessao?(4.9-1.67)*px*camera.zoom:0),w,h);
+      const zoom=palcoEnquadrado?Math.min(livreW*.9/(6.55*px),livreH*.88/(3.38*px)):Math.min(1,livreW/w,livreH/h);
+      const escala=Math.max(.01,zoom), dx=(w-livreW)/2;
+      const dy=(h-livreH)/2-topo-(palcoEnquadrado?(4.9-1.67)*px*escala:0);
+      const view=camera.view;
+      mudouEnquadramento=!view?.enabled || view.fullWidth!==w || view.fullHeight!==h ||
+        view.offsetX!==dx || view.offsetY!==dy || camera.zoom!==escala;
+      if(mudouEnquadramento){
+        camera.zoom=escala;
+        camera.setViewOffset(w,h,dx,dy,w,h);
+      }
     }else if(camera.view?.enabled){
       camera.zoom=1;camera.clearViewOffset();
     }
     if(robo.quadro(dt))render.shadowMap.needsUpdate=true;
     render.render(cena,camera);
+    if(palcoEnquadrado && painel && (!projecao || mudouEnquadramento)){
+      projecao=projetarTelao();
+      aoProjetar(projecao);
+    }
   }
   function mostrar(sim){
     cancelarGiro();controle.parar();ativo=sim;tamanho();anterior=performance.now();render.setAnimationLoop(sim?quadro:null);
@@ -199,7 +224,9 @@ export function criarMundo(container,palcos,abrir,toque,falhou,movimento) {
     controle.parar();camera.position.set(.72,1.67,3.05);camera.lookAt(0,1.4,0);
   }
   return {pecasVisiveis:robo.pecasVisiveis,mostrar,posicionar,verRobo,cancelarGiro,enquadrarVisor,
-    focar:()=>{emSessao=false;render.domElement.focus({preventScroll:true});},
+    projecaoTelao:()=>projecao,
+    sairDoPalco:()=>{palcoEnquadrado=null;projecao=null;},
+    focar:()=>{render.domElement.focus({preventScroll:true});},
     estado:()=>({posicao:{x:camera.position.x,z:camera.position.z},direcao:camera.rotation.y}),
     atualizar(ids,completo,animar){
       robo.atualizar(ids,completo,animar&&!reduz.matches);
