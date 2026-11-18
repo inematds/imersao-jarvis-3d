@@ -216,7 +216,7 @@
           "tipo": "guia",
           "titulo": "Guia do jarvis-painel",
           "url": "https://inematds.github.io/jarvis-painel/guia/",
-          "detalhe": "Esta etapa pede um computador com placa de vídeo. Confira os requisitos no guia."
+          "detalhe": "Esta etapa pede Python e git no computador, sem placa de vídeo. Confira os requisitos no guia."
         }
       ],
       "video": {
